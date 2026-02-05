@@ -16,15 +16,15 @@ class UserService
         return $this->userRepository->existsEmail($email);
     }
 
-    public function saveUserOnDB(string $name, string $email, string $password): bool
+    public function saveUserOnDB(string $name, string $email, string $password): ?User
     {
         try {
             $u = new User($name, $email, $password);
             $this->userRepository->save($u);
-            return true;
+            return $u;
         } catch (PDOException $e) {
             error_log($e->getMessage());
-            return false;
+            return null;
         }
     }
 }

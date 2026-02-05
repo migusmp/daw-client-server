@@ -46,9 +46,16 @@ class AuthController
             JsonResponse::error("Email already in use", JsonCode::ALREADY_EXISTS_EMAIL, HttpStatus::CONFLICT);
 
         // If user doesn't exists then save on the bbdd
-        if (!$this->userService->saveUserOnDB($name, $email, $password)) {
+        $u = $this->userService->saveUserOnDB($name, $email, $password);
+        if (!$u) {
             JsonResponse::error("Internal server error", JsonCode::INTERNAL_SERVER_ERROR, HttpStatus::INTERNAL_SERVER_ERROR);
         }
+
+        // GENERATE SESSION USER KEYS
+        session_regenerate_id(true);
+        $_SESSION['user_id'] = $u->getId();
+        $_SESSION['user_role'] = $u->getRole()->value;
+        $_SESSION['user_name'] = $u->getName();
 
         // Return the success response to client
         JsonResponse::success("User registered successfully", JsonCode::USER_REGISTERED_SUCCESS, HttpStatus::CREATED);
