@@ -1,0 +1,42 @@
+# ===== OS / Editor =====
+.DS_Store
+Thumbs.db
+*.swp
+*.swo
+*.tmp
+
+# ===== Logs =====
+*.log
+logs/
+log/
+
+# ===== Local env / secrets =====
+.env
+.env.*
+!.env.example
+
+# ===== Dependencies =====
+vendor/            # Composer (si lo usas)
+node_modules/      # (solo si alguna vez usas npm)
+bower_components/
+
+# ===== Cache / Build artifacts =====
+.cache/
+.tmp/
+dist/
+build/
+
+# ===== PHP specific =====
+*.pid
+*.seed
+*.pid.lock
+
+# PHPUnit / coverage (si lo usas)
+.phpunit.result.cache
+coverage/
+.clover.xml
+
+# ===== IDE =====
+.vscode/
+.idea/
+*.iml
