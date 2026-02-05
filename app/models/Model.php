@@ -18,7 +18,7 @@ class Model {
         return $this->db->results();
     }
 
-    public function findById($id) {
+    public function find($id) {
         $this->db->query("SELECT * FROM {$this->table} WHERE id = :id LIMIT 1");
         $this->db->bind(":id", $id);
         return $this->db->result();
