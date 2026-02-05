@@ -31,9 +31,9 @@ class Router
 
         $callback = $this->routes[$method][$path] ?? null;
 
+        // If this route does't exists on router array, return error page 404
         if (!$callback) {
-            http_response_code(404);
-            return "404 Not Found";
+            require_once __DIR__ . "/../views/error/404.php";
         }
 
         if (is_array($callback)) {
