@@ -38,5 +38,6 @@
             </section>
         </div>
     </main>
+    <script type="module" src="/assets/js/auth/login.js"></script>
 </body>
 </html>

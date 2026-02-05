@@ -42,13 +42,13 @@ registerForm.addEventListener("submit", async (e) => {
       throw new Error(data.message || "Request failed");
     }
 
-    createMessageErrorToDiv(errorsDiv, data.message || "Registro completado", "success");
+    createMessageErrorToDiv(errorsDiv, data.message || "Register completed", "success");
     inputName.value = "";
     inputEmail.value = "";
     inputPassword.value = "";
 
     redirectTo("/", 1200);
   } catch (err) {
-    createMessageErrorToDiv(errorsDiv, err.message ?? String(err));
+    console.error(err);
   }
 });
