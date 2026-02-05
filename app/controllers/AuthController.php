@@ -56,9 +56,25 @@ class AuthController
         $_SESSION['user_id'] = $u->getId();
         $_SESSION['user_role'] = $u->getRole()->value;
         $_SESSION['user_name'] = $u->getName();
+        $_SESSION['user_email'] = $u->getEmail();
 
         // Return the success response to client
         JsonResponse::success("User registered successfully", JsonCode::USER_REGISTERED_SUCCESS, HttpStatus::CREATED);
+    }
+    public function me()
+    {
+        if (empty($_SESSION['user_id'])) {
+            JsonResponse::error("Not authenticated", JsonCode::NOT_AUTHENTICATED, HttpStatus::UNAUTHORIZED);
+        }
+
+        $data = [
+            "id" => $_SESSION['user_id'],
+            "name" => $_SESSION['user_name'] ?? null,
+            "email" => $_SESSION['user_email'] ?? null,
+            "role" => $_SESSION['user_role'] ?? null,
+        ];
+
+        JsonResponse::success("Authenticated", JsonCode::AUTHENTICATED, HttpStatus::OK, $data);
     }
     public function login() {}
 }

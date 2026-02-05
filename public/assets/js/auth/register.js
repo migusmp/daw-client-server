@@ -47,7 +47,7 @@ registerForm.addEventListener("submit", async (e) => {
     inputEmail.value = "";
     inputPassword.value = "";
 
-    redirectTo("/login", 1200);
+    redirectTo("/", 1200);
   } catch (err) {
     createMessageErrorToDiv(errorsDiv, err.message ?? String(err));
   }

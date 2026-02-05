@@ -10,5 +10,6 @@ $router->get("/login", [HomeController::class, 'loginPage']);
 $router->get("/register", [HomeController::class, 'registerPage']);
 
 $router->post("/api/register", [AuthController::class, 'register']);
+$router->get("/api/me", [AuthController::class, 'me']);
 
 $router->resolve();
