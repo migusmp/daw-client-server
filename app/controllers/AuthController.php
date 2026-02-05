@@ -5,7 +5,6 @@ require_once __DIR__ . "/../helpers/JsonResponse.php";
 require_once __DIR__ . "/../utils/JsonCode.php";
 require_once __DIR__ . "/../utils/HttpStatus.php";
 
-
 class AuthController
 {
     private UserService $userService;
@@ -18,7 +17,7 @@ class AuthController
     {
         $data = Request::json();
         $name = trim($data['name']) ?? '';
-        $email = trim($data['email']) ?? '';
+        $email = trim($data['email'] ?? '');
         $password = $data['password'] ?? '';
 
         // Validation of register form fields
@@ -30,7 +29,7 @@ class AuthController
             JsonResponse::error("Email field is empty", JsonCode::EMPTY_MAIL, HttpStatus::BAD_REQUEST);
         }
 
-        if (filter_var($email, FILTER_VALIDATE_EMAIL)) {
+        if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
             JsonResponse::error("Invalid email format", JsonCode::INVALID_MAIL_FORMAT, HttpStatus::BAD_REQUEST);
         }
 
