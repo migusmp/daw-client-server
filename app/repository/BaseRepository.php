@@ -1,5 +1,5 @@
 <?php
-class Model {
+class BaseRepository {
     protected $db;
     protected $table;
 
@@ -8,7 +8,7 @@ class Model {
         $this->db = new Database();
 
         if (empty($this->table)) {
-            die("ERROR: You must define \$table on the children model");
+            die("ERROR: You must define \$table on the children repository");
         }
     }
 
