@@ -43,6 +43,38 @@ class User extends Model
         return $row ? self::fromRow($row) : null;
     }
 
+    public static function existsEmail(string $email): bool
+    {
+        $db = new Database();
+        $db->query("SELECT id FROM users WHERE email = :email LIMIT 1");
+        $db->bind(":email", $email);
+        $row = $db->result();
+        return $row ? true : false;
+    }
+
+    public static function getAll(): array
+    {
+        $db = new Database();
+        $db->query("SELECT * FROM users ORDER BY id DESC");
+        $db->execute();
+        $rows = $db->results();
+
+        return array_map(fn($r) => self::fromRow($r), $rows);
+    }
+
+    public static function count(): int
+    {
+        $db = new Database();
+        $db->query("SELECT COUNT(*) AS total FROM users");
+        $row = $db->result();
+        return (int)($row["total"] ?? 0);
+    }
+
+    public function verifyPassword(string $plainPassword): bool
+    {
+        return password_verify($plainPassword, $this->passwordHash);
+    }
+
     public function save(): bool
     {
         $this->db->query("
@@ -56,6 +88,24 @@ class User extends Model
         $this->db->execute();
 
         $this->id = (int)$this->db->lastInsertId();
+        return true;
+    }
+
+    public function update(): bool
+    {
+        if ($this->id === null) return false;
+
+        $this->db->query("
+        UPDATE {$this->table}
+        SET name = :name, email = :email, password_hash = :password_hash
+        WHERE id = :id
+    ");
+        $this->db->bind(":name", $this->name);
+        $this->db->bind(":email", $this->email);
+        $this->db->bind(":password_hash", $this->passwordHash);
+        $this->db->bind(":id", $this->id);
+
+        $this->db->execute();
         return true;
     }
 
