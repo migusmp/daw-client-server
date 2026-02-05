@@ -14,8 +14,12 @@ class User extends Model
 
         $this->name = $name;
         $this->email = $email;
-        $this->passwordHash = password_hash($password, PASSWORD_BCRYPT);
+
+        if ($password !== "") {
+            $this->passwordHash = password_hash($password, PASSWORD_BCRYPT);
+        }
     }
+
 
     private static function fromRow(array $row): User
     {
@@ -151,5 +155,15 @@ class User extends Model
     public function getPasswordHash(): string
     {
         return $this->passwordHash;
+    }
+
+    // Convert the object into an array to JSON Responses
+    public function toArray(): array
+    {
+        return [
+            "id" => $this->id,
+            "name" => $this->name,
+            "email" => $this->email,
+        ];
     }
 }
