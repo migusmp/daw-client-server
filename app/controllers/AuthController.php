@@ -76,5 +76,35 @@ class AuthController
 
         JsonResponse::success("Authenticated", JsonCode::AUTHENTICATED, HttpStatus::OK, $data);
     }
-    public function login() {}
+    public function login()
+    {
+        $data = Request::json();
+        $email = trim($data['email'] ?? '');
+        $password = $data['password'] ?? '';
+
+        if (!$email || $email === '') {
+            JsonResponse::error("Email field is empty", JsonCode::EMPTY_MAIL, HttpStatus::BAD_REQUEST);
+        }
+
+        if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
+            JsonResponse::error("Invalid email format", JsonCode::INVALID_MAIL_FORMAT, HttpStatus::BAD_REQUEST);
+        }
+        
+        if (!$password || $password === '') {
+            JsonResponse::error("Password field is empty", JsonCode::EMPTY_PASS, HttpStatus::BAD_REQUEST);
+        }
+
+
+        $u = $this->userService->verifyUserLogin($email, $password);
+        if (!$u)
+            JsonResponse::error("Email or password are incorrect", JsonCode::BAD_CREDENTIALS, HttpStatus::BAD_REQUEST);
+
+        session_regenerate_id(true);
+        $_SESSION['user_id'] = $u->getId();
+        $_SESSION['user_role'] = $u->getRole()->value;
+        $_SESSION['user_name'] = $u->getName();
+        $_SESSION['user_email'] = $u->getEmail();
+
+        JsonResponse::success("Successfull login", JsonCode::USER_LOGGED_SUCCESS, HttpStatus::OK);
+    }
 }

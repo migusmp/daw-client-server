@@ -11,6 +11,19 @@ class UserService
         $this->userRepository = new UserRepository();
     }
 
+    public function verifyUserLogin(string $email, string $password): ?User
+    {
+        try {
+            $u = $this->userRepository->findByEmail($email);
+            if (!$u) return null;
+            if (!$u->verifyPassword($password)) return null;
+            return $u;
+        } catch (PDOException $e) {
+            error_log($e->getMessage());
+            return null;
+        }
+    }
+
     public function verifyUserAlreadyExists(string $email): bool
     {
         return $this->userRepository->existsEmail($email);
