@@ -1,5 +1,5 @@
 import {
-  createMessageErrorToDiv,
+  renderMessage,
   isEmpty,
   redirectTo,
 } from "../utils/utils.js";
@@ -19,9 +19,9 @@ formLogin.addEventListener("submit", async (e) => {
   const password = passwordInput.value.trim();
 
   if (isEmpty(email))
-    return createMessageErrorToDiv(errorsDiv, "Email field is empty");
+    return renderMessage(errorsDiv, "Email field is empty");
   if (isEmpty(password))
-    return createMessageErrorToDiv(errorsDiv, "Password field is empty");
+    return renderMessage(errorsDiv, "Password field is empty");
 
   try {
     const res = await fetch("/api/login", {
@@ -43,7 +43,7 @@ formLogin.addEventListener("submit", async (e) => {
       throw new Error(data.message || "Request failed");
     }
 
-    createMessageErrorToDiv(
+    renderMessage(
       errorsDiv,
       data.message || "Login completed",
       "success",
@@ -53,6 +53,6 @@ formLogin.addEventListener("submit", async (e) => {
 
     redirectTo("/", 1200);
   } catch (e) {
-    createMessageErrorToDiv(errorsDiv, e.message ?? String(e));
+    renderMessage(errorsDiv, e.message ?? String(e));
   }
 });

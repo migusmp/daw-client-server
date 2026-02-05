@@ -1,4 +1,4 @@
-import { createMessageErrorToDiv, isEmpty, redirectTo } from "../utils/utils.js";
+import { renderMessage, isEmpty, redirectTo } from "../utils/utils.js";
 
 const registerForm = document.getElementById("form-register");
 const inputName = document.getElementById("name");
@@ -18,9 +18,9 @@ registerForm.addEventListener("submit", async (e) => {
   const email = inputEmail.value.trim();
   const password = inputPassword.value.trim();
 
-  if (isEmpty(name)) return createMessageErrorToDiv(errorsDiv, "Name field is empty");
-  if (isEmpty(email)) return createMessageErrorToDiv(errorsDiv, "Email field is empty");
-  if (isEmpty(password)) return createMessageErrorToDiv(errorsDiv, "Password field is empty");
+  if (isEmpty(name)) return renderMessage(errorsDiv, "Name field is empty");
+  if (isEmpty(email)) return renderMessage(errorsDiv, "Email field is empty");
+  if (isEmpty(password)) return renderMessage(errorsDiv, "Password field is empty");
 
   try {
     const res = await fetch("/api/register", {
@@ -42,7 +42,7 @@ registerForm.addEventListener("submit", async (e) => {
       throw new Error(data.message || "Request failed");
     }
 
-    createMessageErrorToDiv(errorsDiv, data.message || "Register completed", "success");
+    renderMessage(errorsDiv, data.message || "Register completed", "success");
     inputName.value = "";
     inputEmail.value = "";
     inputPassword.value = "";
