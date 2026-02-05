@@ -1,0 +1,232 @@
+:root {
+  --bg-1: #0b1021;
+  --bg-2: #0f172a;
+  --bg-3: #111827;
+  --card: rgba(13, 18, 34, 0.78);
+  --card-border: rgba(148, 163, 184, 0.18);
+  --text: #e2e8f0;
+  --muted: #94a3b8;
+  --accent: #38bdf8;
+  --accent-2: #f97316;
+  --danger: #ef4444;
+  --success: #22c55e;
+  --shadow: 0 30px 80px rgba(3, 7, 18, 0.45);
+  --radius: 20px;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  height: 100%;
+}
+
+body {
+  margin: 0;
+  font-family: "Space Grotesk", "Segoe UI", system-ui, -apple-system, sans-serif;
+  color: var(--text);
+  background: radial-gradient(1100px circle at 15% 20%, #1b2b4b 0%, var(--bg-1) 45%, #070b18 100%);
+  overflow-x: hidden;
+}
+
+body::before,
+body::after {
+  content: "";
+  position: fixed;
+  inset: -20%;
+  z-index: 0;
+  pointer-events: none;
+}
+
+body::before {
+  background:
+    radial-gradient(360px 360px at 80% 15%, rgba(56, 189, 248, 0.35), transparent 60%),
+    radial-gradient(420px 420px at 20% 80%, rgba(249, 115, 22, 0.35), transparent 60%),
+    radial-gradient(2px 2px at 35% 35%, rgba(255, 255, 255, 0.08), transparent 70%),
+    radial-gradient(2px 2px at 65% 65%, rgba(255, 255, 255, 0.06), transparent 70%);
+}
+
+body::after {
+  background: repeating-linear-gradient(
+    120deg,
+    rgba(255, 255, 255, 0.04) 0px,
+    rgba(255, 255, 255, 0.04) 1px,
+    transparent 1px,
+    transparent 7px
+  );
+  opacity: 0.12;
+  mix-blend-mode: soft-light;
+}
+
+.page {
+  min-height: 100%;
+  position: relative;
+  z-index: 1;
+  display: grid;
+  place-items: center;
+  padding: 40px 20px 60px;
+}
+
+.shell {
+  width: min(520px, 100%);
+  display: grid;
+}
+
+.card {
+  background: var(--card);
+  border: 1px solid var(--card-border);
+  border-radius: var(--radius);
+  padding: 36px 36px 28px;
+  box-shadow: var(--shadow);
+  backdrop-filter: blur(12px);
+  animation: float-in 0.7s ease-out;
+}
+
+.card__head {
+  margin-bottom: 28px;
+}
+
+.eyebrow {
+  text-transform: uppercase;
+  font-size: 0.75rem;
+  letter-spacing: 0.28em;
+  color: var(--accent);
+  margin: 0 0 12px;
+}
+
+h1 {
+  font-family: "Fraunces", "Georgia", serif;
+  font-weight: 600;
+  font-size: clamp(2rem, 3vw, 2.4rem);
+  margin: 0 0 12px;
+}
+
+.subtitle {
+  color: var(--muted);
+  margin: 0;
+  line-height: 1.5;
+}
+
+.form {
+  display: grid;
+  gap: 18px;
+}
+
+.field {
+  display: grid;
+  gap: 8px;
+}
+
+.field span {
+  font-size: 0.9rem;
+  color: var(--muted);
+}
+
+.field input {
+  width: 100%;
+  padding: 14px 16px;
+  border-radius: 14px;
+  border: 1px solid transparent;
+  background: rgba(15, 23, 42, 0.65);
+  color: var(--text);
+  font-size: 1rem;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease, transform 0.2s ease;
+}
+
+.field input::placeholder {
+  color: rgba(148, 163, 184, 0.6);
+}
+
+.field input:focus {
+  outline: none;
+  border-color: rgba(56, 189, 248, 0.65);
+  box-shadow: 0 0 0 4px rgba(56, 189, 248, 0.18);
+  transform: translateY(-1px);
+}
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  padding: 14px 18px;
+  border: none;
+  border-radius: 16px;
+  background: linear-gradient(130deg, var(--accent), #22c55e);
+  color: #0b1021;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  cursor: pointer;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 16px 40px rgba(56, 189, 248, 0.35);
+}
+
+.btn:active {
+  transform: translateY(0);
+}
+
+.helper {
+  font-size: 0.9rem;
+  color: var(--muted);
+  margin: 0;
+}
+
+.helper a {
+  color: var(--accent-2);
+  text-decoration: none;
+  font-weight: 600;
+}
+
+.alert-area {
+  margin-top: 18px;
+  min-height: 28px;
+}
+
+.alert {
+  margin: 0;
+  padding: 12px 14px;
+  border-radius: 12px;
+  font-size: 0.92rem;
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  border: 1px solid transparent;
+}
+
+.alert--error {
+  background: rgba(239, 68, 68, 0.15);
+  border-color: rgba(239, 68, 68, 0.4);
+  color: #fecaca;
+}
+
+.alert--success {
+  background: rgba(34, 197, 94, 0.15);
+  border-color: rgba(34, 197, 94, 0.4);
+  color: #bbf7d0;
+}
+
+@keyframes float-in {
+  from {
+    opacity: 0;
+    transform: translateY(16px) scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@media (max-width: 520px) {
+  .card {
+    padding: 28px 22px;
+  }
+  .btn {
+    width: 100%;
+  }
+}
