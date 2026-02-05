@@ -7,6 +7,7 @@ class User extends Model
     private string $name;
     private string $email;
     private string $passwordHash;
+    private UserRole $role;
 
     public function __construct($name, $email, $password)
     {
@@ -14,18 +15,19 @@ class User extends Model
 
         $this->name = $name;
         $this->email = $email;
+        $this->role = UserRole::USER;
 
         if ($password !== "") {
             $this->passwordHash = password_hash($password, PASSWORD_BCRYPT);
         }
     }
 
-
     private static function fromRow(array $row): User
     {
         $u = new User($row["name"], $row["email"], "");
         $u->id = (int)$row["id"];
         $u->passwordHash = $row["password_hash"];
+        $u->role = UserRole::from($row["role"]);
         return $u;
     }
 
@@ -82,12 +84,13 @@ class User extends Model
     public function save(): bool
     {
         $this->db->query("
-            INSERT INTO {$this->table} (name, email, password_hash)
-            VALUES (:name, :email, :password_hash)    
+            INSERT INTO {$this->table} (name, email, password_hash, role)
+            VALUES (:name, :email, :password_hash, :role)    
         ");
         $this->db->bind(":name", $this->name);
         $this->db->bind(":email", $this->email);
         $this->db->bind(":password_hash", $this->passwordHash);
+        $this->db->bind(":role", $this->role->value);
 
         $this->db->execute();
 
@@ -101,12 +104,13 @@ class User extends Model
 
         $this->db->query("
         UPDATE {$this->table}
-        SET name = :name, email = :email, password_hash = :password_hash
+        SET name = :name, email = :email, password_hash = :password_hash, role = :role
         WHERE id = :id
     ");
         $this->db->bind(":name", $this->name);
         $this->db->bind(":email", $this->email);
         $this->db->bind(":password_hash", $this->passwordHash);
+        $this->db->bind(":role", $this->role->value);
         $this->db->bind(":id", $this->id);
 
         $this->db->execute();
@@ -157,6 +161,16 @@ class User extends Model
         return $this->passwordHash;
     }
 
+    public function setRole(UserRole $role)
+    {
+        $this->role = $role;
+    }
+    
+    public function getRole(): UserRole
+    {
+        return $this->role;
+    }
+
     // Convert the object into an array to JSON Responses
     public function toArray(): array
     {
@@ -164,6 +178,7 @@ class User extends Model
             "id" => $this->id,
             "name" => $this->name,
             "email" => $this->email,
+            "role" => $this->role->value,
         ];
     }
 }
