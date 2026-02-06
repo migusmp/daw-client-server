@@ -1,0 +1,112 @@
+.site-container {
+  width: min(1100px, calc(100% - 32px));
+  margin: 0 auto;
+}
+
+.site-header {
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  background: var(--header-bg);
+  border-bottom: 1px solid var(--border);
+  backdrop-filter: blur(10px);
+}
+
+.site-header .site-container {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 14px 0;
+}
+
+.site-brand {
+  color: var(--text);
+  text-decoration: none;
+  font-weight: 800;
+  letter-spacing: 0.01em;
+}
+
+.site-nav {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.site-nav__link {
+  color: var(--muted);
+  text-decoration: none;
+  padding: 8px 10px;
+  border-radius: 999px;
+  border: 1px solid transparent;
+}
+
+.register-nav__link {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  border-radius: 999px;
+  text-decoration: none;
+  padding: 10px 14px;
+  text-align: center;
+  border: 1px solid var(--border);
+  color: var(--text);
+  background: transparent;
+  font-weight: 750;
+  line-height: 1;
+  transition: transform 0.15s ease, background 0.15s ease, border-color 0.15s ease;
+}
+.login-nav__link {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  border-radius: 999px;
+  text-decoration: none;
+  padding: 10px 14px;
+  text-align: center;
+  background: var(--accent);
+  border: 1px solid transparent;
+  color: var(--accent-contrast);
+  font-weight: 800;
+  line-height: 1;
+  transition: transform 0.15s ease, filter 0.15s ease;
+}
+
+.login-nav__link:hover {
+  transform: translateY(-1px);
+  filter: brightness(1.05);
+}
+
+.register-nav__link:hover {
+  transform: translateY(-1px);
+  background: rgba(var(--accent-rgb), 0.08);
+  border-color: rgba(var(--accent-rgb), 0.28);
+}
+
+.login-nav__link:focus-visible,
+.register-nav__link:focus-visible {
+  outline: 3px solid rgba(var(--accent-rgb), 0.28);
+  outline-offset: 2px;
+}
+
+.site-nav__link:hover {
+  color: var(--text);
+  background: rgba(var(--accent-rgb), 0.06);
+  border-color: rgba(var(--accent-rgb), 0.2);
+}
+
+.site-nav__link.is-active {
+  color: var(--text);
+  background: rgba(var(--accent-rgb), 0.14);
+  border-color: rgba(var(--accent-rgb), 0.28);
+}
+
+@media (max-width: 720px) {
+  .site-header .site-container {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+}

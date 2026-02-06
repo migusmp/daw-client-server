@@ -30,12 +30,12 @@ function env(string $key, string $default = ''): string
     return ($value === false || $value === '') ? $default : (string) $value;
 }
 
+define('APP_NAME', env('APP_NAME', 'Ayuntamiento'));
 define('DB_HOST', env('DB_HOST', 'localhost'));
 define('DB_PORT', env('DB_PORT', '3306'));
 define('DB_NAME', env('DB_NAME', 'cityhalldb'));
 define('DB_USER', env('DB_USER', ''));
 define('DB_PASS', env('DB_PASS', ''));
-
 define('BASE_URL', env('BASE_URL', 'http://localhost/city_hall/public/'));
 
 ?>
