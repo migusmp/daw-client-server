@@ -12,5 +12,6 @@ $router->get("/register", [HomeController::class, 'registerPage']);
 $router->post("/api/register", [AuthController::class, 'register']);
 $router->get("/api/me", [AuthController::class, 'me']);
 $router->post("/api/login", [AuthController::class, 'login']);
+$router->post("/logout", [AuthController::class, 'logout']);
 
 $router->resolve();

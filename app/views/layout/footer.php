@@ -33,5 +33,7 @@
         </div>
     </footer>
     <script src="/assets/js/utils/theme.js" defer></script>
+    <script src="/assets/js/utils/mobile-menu.js" defer></script>
+    <script src="/assets/js/utils/profile-menu.js" defer></script>
 </body>
 </html>

@@ -7,11 +7,15 @@ require_once __DIR__ . "/../utils/HttpStatus.php";
 
 class AuthController
 {
-    private UserService $userService;
+    private ?UserService $userService = null;
 
-    public function __construct()
+    private function users(): UserService
     {
-        $this->userService = new UserService();
+        if ($this->userService === null) {
+            $this->userService = new UserService();
+        }
+
+        return $this->userService;
     }
     public function register()
     {
@@ -42,11 +46,11 @@ class AuthController
         }
 
         // Verify if user does already exists on the database
-        if ($this->userService->verifyUserAlreadyExists($email))
+        if ($this->users()->verifyUserAlreadyExists($email))
             JsonResponse::error("Email already in use", JsonCode::ALREADY_EXISTS_EMAIL, HttpStatus::CONFLICT);
 
         // If user doesn't exists then save on the bbdd
-        $u = $this->userService->saveUserOnDB($name, $email, $password);
+        $u = $this->users()->saveUserOnDB($name, $email, $password);
         if (!$u) {
             JsonResponse::error("Internal server error", JsonCode::INTERNAL_SERVER_ERROR, HttpStatus::INTERNAL_SERVER_ERROR);
         }
@@ -95,7 +99,7 @@ class AuthController
         }
 
 
-        $u = $this->userService->verifyUserLogin($email, $password);
+        $u = $this->users()->verifyUserLogin($email, $password);
         if (!$u)
             JsonResponse::error("Email or password are incorrect", JsonCode::BAD_CREDENTIALS, HttpStatus::BAD_REQUEST);
 
@@ -106,5 +110,28 @@ class AuthController
         $_SESSION['user_email'] = $u->getEmail();
 
         JsonResponse::success("Successfull login", JsonCode::USER_LOGGED_SUCCESS, HttpStatus::OK);
+    }
+
+    public function logout(): void
+    {
+        $_SESSION = [];
+
+        if (ini_get('session.use_cookies')) {
+            $params = session_get_cookie_params();
+            setcookie(
+                session_name(),
+                '',
+                time() - 42000,
+                $params['path'] ?? '/',
+                $params['domain'] ?? '',
+                (bool) ($params['secure'] ?? false),
+                (bool) ($params['httponly'] ?? false),
+            );
+        }
+
+        session_destroy();
+
+        header("Location: /");
+        exit;
     }
 }

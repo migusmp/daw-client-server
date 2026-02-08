@@ -28,12 +28,20 @@ class Database {
             $this->dbh = new PDO($dsn, $this->user, $this->pass, $options);
         } catch (PDOException $e) {
             $this->error = $e->getMessage();
-            echo $this->error;
+            error_log("[Database] Connection failed: " . $this->error);
+            throw $e;
         }
     }
 
     // Method to prepare sql query
     public function query($sql) {
+        if (!$this->dbh) {
+            $message = "Database connection not initialized";
+            if (!empty($this->error)) {
+                $message .= ": " . $this->error;
+            }
+            throw new RuntimeException($message);
+        }
         $this->stmt = $this->dbh->prepare($sql);
     }
 
