@@ -42,7 +42,7 @@ class UserRepository extends BaseRepository
 
     public function getAll(): array
     {
-        $this->db->query("SELECT * FROM users ORDER BY id DESC");
+        $this->db->query("SELECT * FROM {$this->table} ORDER BY id DESC");
         $this->db->execute();
         $rows = $this->db->results();
 
