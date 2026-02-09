@@ -42,7 +42,9 @@ class AdminController
     public function getUsers()
     {
         if (!$this->checkIfIsAdmin()) { // Si el usuario no es admin no puede entrar a este endpoint
-            JsonResponse::error("Permission denied", JsonCode::UNAUTHORIZED, HttpStatus::UNAUTHORIZED);
+            http_response_code(HttpStatus::FORBIDDEN->value);
+            require_once __DIR__ . "/../views/error/403.php";
+            exit;
         }
 
         $users = $this->users()->getAllUsers();

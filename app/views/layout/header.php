@@ -4,9 +4,12 @@ $title = $title ?? '';
 $head = $head ?? '';
 $containerClass = $containerClass ?? '';
 $showHeader = $showHeader ?? true;
+$headerVariant = $headerVariant ?? '';
 $path = $_SERVER['REQUEST_URI'] ?? '/';
 $path = explode('?', $path, 2)[0];
+$isAdminHeader = $headerVariant === 'admin' || strpos($path, '/admin') === 0;
 $isAuthenticated = isset($_SESSION) && !empty($_SESSION['user_id']);
+$isAdminUser = isset($_SESSION['user_role']) && $_SESSION['user_role'] === 'ADMIN';
 $profileTitle = $isAuthenticated ? ($_SESSION['user_name'] ?? 'Perfil') : 'Perfil';
 ?>
 <!doctype html>
@@ -35,14 +38,27 @@ $profileTitle = $isAuthenticated ? ($_SESSION['user_name'] ?? 'Perfil') : 'Perfi
 </head>
     <body class="site">
     <?php if ($showHeader): ?>
-        <header class="site-header">
+        <header class="site-header<?= $isAdminHeader ? ' site-header--admin' : '' ?>">
             <div class="site-container">
-                <a class="site-brand" href="/"><?= htmlspecialchars($appName, ENT_QUOTES, 'UTF-8') ?></a>
+                <div class="site-brand-group">
+                    <a class="site-brand" href="/"><?= htmlspecialchars($appName, ENT_QUOTES, 'UTF-8') ?></a>
+                    <?php if ($isAdminHeader): ?>
+                        <span class="site-header__badge">Administración</span>
+                    <?php endif; ?>
+                </div>
                 <nav class="site-nav site-nav--desktop" aria-label="Navegación">
-                    <a class="site-nav__link <?= $path === '/' ? 'is-active' : '' ?>" href="/">Inicio</a>
-                    <?php if (!$isAuthenticated): ?>
-                        <a class="login-nav__link" href="/login">Iniciar sesión</a>
-                        <a class="register-nav__link" href="/register">Crear cuenta</a>
+                    <?php if ($isAdminHeader): ?>
+                        <a class="site-nav__link <?= $path === '/admin' ? 'is-active' : '' ?>" href="/admin">Panel</a>
+                        <a class="site-nav__link" href="/">Portal</a>
+                    <?php else: ?>
+                        <a class="site-nav__link <?= $path === '/' ? 'is-active' : '' ?>" href="/">Inicio</a>
+                        <?php if ($isAdminUser): ?>
+                            <a class="site-nav__link <?= $path === '/admin' ? 'is-active' : '' ?>" href="/admin">Administración</a>
+                        <?php endif; ?>
+                        <?php if (!$isAuthenticated): ?>
+                            <a class="login-nav__link" href="/login">Iniciar sesión</a>
+                            <a class="register-nav__link" href="/register">Crear cuenta</a>
+                        <?php endif; ?>
                     <?php endif; ?>
                 </nav>
                 <div class="site-actions">
@@ -166,7 +182,15 @@ $profileTitle = $isAuthenticated ? ($_SESSION['user_name'] ?? 'Perfil') : 'Perfi
                         <div class="mobile-menu__divider" aria-hidden="true"></div>
 
 	                    <nav class="mobile-menu__nav" aria-label="Navegación móvil">
-	                        <a class="mobile-menu__link <?= $path === '/' ? 'is-active' : '' ?>" href="/">Inicio</a>
+                            <?php if ($isAdminHeader): ?>
+                                <a class="mobile-menu__link <?= $path === '/admin' ? 'is-active' : '' ?>" href="/admin">Panel</a>
+                                <a class="mobile-menu__link" href="/">Portal</a>
+                            <?php else: ?>
+	                            <a class="mobile-menu__link <?= $path === '/' ? 'is-active' : '' ?>" href="/">Inicio</a>
+                                <?php if ($isAdminUser): ?>
+                                    <a class="mobile-menu__link <?= $path === '/admin' ? 'is-active' : '' ?>" href="/admin">Administración</a>
+                                <?php endif; ?>
+                            <?php endif; ?>
 	                    </nav>
 
                         <div class="mobile-menu__divider" aria-hidden="true"></div>
