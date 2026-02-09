@@ -3,6 +3,7 @@ require_once __DIR__ . "/core/Router.php";
 require_once __DIR__ . "/controllers/HomeController.php";
 require_once __DIR__ . "/controllers/AuthController.php";
 require_once __DIR__ . "/controllers/AdminController.php";
+require_once __DIR__ . "/controllers/CompanyController.php";
 
 $router = new Router();
 
@@ -18,5 +19,8 @@ $router->post("/logout", [AuthController::class, 'logout']);
 // ADMIN ROUTES
 $router->get("/admin", [AdminController::class, 'index']);
 $router->get("/api/admin/users", [AdminController::class, 'getUsers']);
+
+// COMPANIES ROUTES
+$router->get("/api/companies", [CompanyController::class, 'getAll']); // TODO: Probar endpoint
 
 $router->resolve();

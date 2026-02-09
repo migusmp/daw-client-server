@@ -16,7 +16,7 @@ class AdminController
         return $this->userService;
     }
 
-    public function verifyIsAdmin()
+    private function verifyIsAdmin()
     {
         if (!isset($_SESSION['user_role']) || $_SESSION['user_role'] !== 'ADMIN') {
             header('Location: /');
@@ -24,7 +24,7 @@ class AdminController
         }
     }
 
-    public function checkIfIsAdmin(): bool
+    private function checkIfIsAdmin(): bool
     {
         if (!isset($_SESSION['user_role']) || $_SESSION['user_role'] !== 'ADMIN') {
             return false;
@@ -41,7 +41,7 @@ class AdminController
 
     public function getUsers()
     {
-        if (!$this->checkIfIsAdmin()) { // Si el usuario no es admin no puede entrar a este endpoint
+        if (!$this->checkIfIsAdmin()) {
             http_response_code(HttpStatus::FORBIDDEN->value);
             require_once __DIR__ . "/../views/error/403.php";
             exit;
