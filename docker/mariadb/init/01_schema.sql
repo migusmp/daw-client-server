@@ -79,6 +79,28 @@ CREATE TABLE IF NOT EXISTS evento (
   UNIQUE KEY uq_evento (id_empresa, nombre, fecha, hora, lugar)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE utf8mb4_unicode_ci;
 
+CREATE TABLE IF NOT EXISTS entrada (
+  id_entrada BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+  id_evento INT UNSIGNED NOT NULL,
+  id_user INT UNSIGNED NOT NULL,
+  qr_token CHAR(36) NOT NULL,
+  precio_pagado DECIMAL(10,2) NOT NULL,
+  estado ENUM('VALIDA','CANCELADA','USADA') NOT NULL DEFAULT 'VALIDA',
+  comprada_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+  CONSTRAINT fk_entrada_evento
+    FOREIGN KEY (id_evento) REFERENCES evento(id_evento)
+    ON UPDATE CASCADE ON DELETE RESTRICT,
+
+  CONSTRAINT fk_entrada_user
+    FOREIGN KEY (id_user) REFERENCES users(id)
+    ON UPDATE CASCADE ON DELETE RESTRICT,
+
+  UNIQUE KEY uq_entrada_qr (qr_token),
+  INDEX idx_entrada_evento (id_evento),
+  INDEX idx_entrada_user (id_user)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
 -- =========================================================
 -- ÍNDICES
 -- Optimizan filtros típicos en listados (por tipo, empresa, fecha y combinados).
