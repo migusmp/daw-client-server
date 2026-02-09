@@ -12,6 +12,8 @@ class Event
     private int $maximun_capacity;  // aforo_maximo
     private string $poster_image;   // imagen_cartel
 
+    public function __construct() {}
+
     public function getId(): int
     {
         return $this->id;
@@ -122,7 +124,8 @@ class Event
         return $this;
     }
 
-    public function toArray(): array {
+    public function toArray(): array
+    {
         return [
             "id" => $this->id,
             "name" => $this->name,
