@@ -11,6 +11,16 @@ class UserService
         $this->userRepository = new UserRepository();
     }
 
+    public function getAllUsers(): array {
+        try {
+            $users = $this->userRepository->getAll();
+            return $users;
+        } catch (PDOException $e) {
+            error_log($e->getMessage());
+            return [];
+        }
+    }
+
     public function verifyUserLogin(string $email, string $password): ?User
     {
         try {

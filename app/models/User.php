@@ -1,7 +1,7 @@
 <?php
 require_once __DIR__ . "/../utils/UserRole.php";
 
-class User
+class User implements JsonSerializable
 {
 
     private ?int $id = null;
@@ -84,5 +84,10 @@ class User
             "email" => $this->email,
             "role" => $this->role->value,
         ];
+    }
+
+    public function jsonSerialize(): array
+    {
+        return $this->toArray();
     }
 }

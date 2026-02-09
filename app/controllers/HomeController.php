@@ -3,7 +3,7 @@ class HomeController
 {
     private function redirectIfAuthenticated(): void
     {
-        if (!empty($_SESSION['user_id'])) {
+        if (isset($_SESSION['user_id'])) {
             header("Location: /");
             exit;
         }

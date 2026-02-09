@@ -347,6 +347,7 @@ html:not([data-theme="dark"]) .theme-switch__thumb-icon--sun {
   flex: 1;
   width: min(1100px, calc(100% - 32px));
   margin: 0 auto;
+  min-height: 100vh;
   padding: 28px 0 40px;
 }
 

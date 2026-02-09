@@ -1,9 +1,10 @@
     </main>
 
+    <?php $appName = htmlspecialchars((defined('APP_NAME') ? APP_NAME : 'App'), ENT_QUOTES, 'UTF-8'); ?>
     <footer class="site-footer">
-        <div class="site-container">
-            <small>© <?= (int) date('Y') ?> <?= htmlspecialchars((defined('APP_NAME') ? APP_NAME : 'App'), ENT_QUOTES, 'UTF-8') ?></small>
-            <button class="theme-switch" type="button" data-theme-toggle role="switch" aria-checked="false" aria-label="Cambiar tema">
+        <div class="site-container site-footer__inner">
+            <small>© <?= (int) date('Y') ?> <?= $appName ?></small>
+            <button class="theme-switch site-footer__theme-switch" type="button" data-theme-toggle role="switch" aria-checked="false" aria-label="Cambiar tema">
                 <span class="sr-only">Cambiar tema</span>
                 <span class="theme-switch__track" aria-hidden="true">
                     <span class="theme-switch__icon theme-switch__icon--sun">
