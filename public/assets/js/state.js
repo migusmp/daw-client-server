@@ -6,18 +6,20 @@ class StateManager {
 
   subscribe(observer) {
     this.observers.push(observer);
-    return () => { // Return an unsubscribe function
+    
+    // Return an unsubscribe function
+    return () => {
       this.observers = this.observers.filter(obs => obs !== observer);
     };
   }
 
   setState(newState) {
-    this.state = { ...this.state, ...newState }; // Merge new state
+    this.state = { ...this.state, ...newState };
     this.notifyObservers();
   }
 
   getState() {
-    return { ...this.state }; // Return a copy to prevent direct manipulation
+    return { ...this.state };
   }
 
   notifyObservers() {
