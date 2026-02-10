@@ -1,5 +1,7 @@
 import { $, getCompanyIdFromUrl } from "../../utils/utils.js";
 
+const empresaName = $(".company-page__title");
+
 const companyName = $("[data-company-name]");
 const companyCity = $("[data-company-city]");
 const companyCreationYear = $("[data-company-year]");
@@ -11,8 +13,93 @@ const updateForm = $("[data-company-form]");
 
 const eventsBox = $("[data-company-events]");
 
+// --- Modales (solo UI) ---
+const updateModal = $('[data-modal="event-update"]');
+const deleteModal = $('[data-modal="event-delete"]');
+
+const updateEventIdEl = $("[data-update-event-id]");
+const updateEventNameEl = $("[data-update-event-name]");
+const deleteEventIdEl = $("[data-delete-event-id]");
+const deleteEventNameEl = $("[data-delete-event-name]");
+
+const updateEventForm = $("[data-event-update-form]");
+
+let lastFocusedEl = null;
+
 const safeText = (v, fallback = "—") =>
   v === null || v === undefined || String(v).trim() === "" ? fallback : String(v);
+
+const normalizeTime = (value) => {
+  const t = safeText(value, "");
+  if (!t) return "";
+  return t.length >= 5 ? t.slice(0, 5) : t;
+};
+
+const setText = (el, value, fallback = "—") => {
+  if (!el) return;
+  el.textContent = safeText(value, fallback);
+};
+
+const setFormValue = (form, name, value) => {
+  if (!form || !form.elements) return;
+  const el = form.elements.namedItem(name);
+  if (!el) return;
+  if (typeof RadioNodeList !== "undefined" && el instanceof RadioNodeList) return;
+  el.value = value;
+};
+
+const closeModal = (modal) => {
+  if (!modal) return;
+  modal.classList.remove("is-open");
+  modal.setAttribute("aria-hidden", "true");
+  document.body.classList.remove("is-modal-open");
+
+  if (lastFocusedEl && lastFocusedEl.isConnected) {
+    lastFocusedEl.focus();
+  }
+  lastFocusedEl = null;
+};
+
+const openModal = (modal) => {
+  if (!modal) return;
+
+  // Cierra cualquier otro modal abierto
+  document.querySelectorAll("[data-modal].is-open").forEach((m) => closeModal(m));
+
+  lastFocusedEl = document.activeElement instanceof HTMLElement ? document.activeElement : null;
+
+  modal.classList.add("is-open");
+  modal.setAttribute("aria-hidden", "false");
+  document.body.classList.add("is-modal-open");
+
+  const focusTarget =
+    modal.querySelector("button[data-modal-close]") ||
+    modal.querySelector("button, [href], input, select, textarea, [tabindex]:not([tabindex='-1'])");
+  if (focusTarget instanceof HTMLElement) {
+    focusTarget.focus();
+  }
+};
+
+const bindModalHandlers = () => {
+  document.addEventListener("click", (e) => {
+    const target = e.target instanceof Element ? e.target : null;
+    if (!target) return;
+
+    const closeTrigger = target.closest("[data-modal-close]");
+    if (!closeTrigger) return;
+
+    const modal = closeTrigger.closest("[data-modal]");
+    if (modal) closeModal(modal);
+  });
+
+  document.addEventListener("keydown", (e) => {
+    if (e.key !== "Escape") return;
+    const opened = document.querySelector("[data-modal].is-open");
+    if (!opened) return;
+    e.preventDefault();
+    closeModal(opened);
+  });
+};
 
 const loadCompany = async () => {
   const id = getCompanyIdFromUrl();
@@ -35,6 +122,8 @@ const loadCompany = async () => {
       if (loadingCompanyNote) loadingCompanyNote.textContent = "Empresa no encontrada.";
       return;
     }
+
+    if (empresaName) empresaName.textContent = safeText("Empresa - " + c.name, "Empresa");
 
     // --- IZQUIERDA: datos ---
     if (companyName) companyName.textContent = safeText(c.name, "Sin nombre");
@@ -113,6 +202,14 @@ const createEventCard = (ev) => {
   btnUpdate.textContent = "Actualizar";
   btnUpdate.dataset.action = "update";
   btnUpdate.dataset.id = String(ev?.id ?? "");
+  btnUpdate.dataset.eventName = safeText(ev?.name, "");
+  btnUpdate.dataset.eventPlace = safeText(ev?.place, "");
+  btnUpdate.dataset.eventDate = safeText(ev?.date, "");
+  btnUpdate.dataset.eventHour = safeText(ev?.hour, "");
+  btnUpdate.dataset.eventPrice = ev?.price != null ? String(ev.price) : "";
+  btnUpdate.dataset.eventCapacity =
+    ev?.maximun_capacity != null ? String(ev.maximun_capacity) : "";
+  btnUpdate.dataset.eventPoster = safeText(ev?.poster_image, "");
 
   const btnDelete = document.createElement("button");
   btnDelete.type = "button";
@@ -120,6 +217,14 @@ const createEventCard = (ev) => {
   btnDelete.textContent = "Eliminar";
   btnDelete.dataset.action = "delete";
   btnDelete.dataset.id = String(ev?.id ?? "");
+  btnDelete.dataset.eventName = safeText(ev?.name, "");
+  btnDelete.dataset.eventPlace = safeText(ev?.place, "");
+  btnDelete.dataset.eventDate = safeText(ev?.date, "");
+  btnDelete.dataset.eventHour = safeText(ev?.hour, "");
+  btnDelete.dataset.eventPrice = ev?.price != null ? String(ev.price) : "";
+  btnDelete.dataset.eventCapacity =
+    ev?.maximun_capacity != null ? String(ev.maximun_capacity) : "";
+  btnDelete.dataset.eventPoster = safeText(ev?.poster_image, "");
 
   actions.append(btnUpdate, btnDelete);
 
@@ -165,3 +270,53 @@ export const loadEvents = async () => {
 
 loadEvents();
 loadCompany();
+
+bindModalHandlers();
+
+// Abre modales al hacer click en "Actualizar" / "Eliminar"
+if (eventsBox) {
+  eventsBox.addEventListener("click", (e) => {
+    const target = e.target instanceof Element ? e.target : null;
+    if (!target) return;
+
+    const btn = target.closest("button[data-action][data-id]");
+    if (!btn) return;
+
+    const action = btn.dataset.action;
+    if (action !== "update" && action !== "delete") return;
+
+    e.preventDefault();
+
+    const ctx = {
+      id: btn.dataset.id ?? "",
+      name: btn.dataset.eventName ?? "",
+      place: btn.dataset.eventPlace ?? "",
+      date: btn.dataset.eventDate ?? "",
+      hour: btn.dataset.eventHour ?? "",
+      price: btn.dataset.eventPrice ?? "",
+      capacity: btn.dataset.eventCapacity ?? "",
+      poster: btn.dataset.eventPoster ?? "",
+    };
+
+    if (action === "update") {
+      setText(updateEventIdEl, ctx.id);
+      setText(updateEventNameEl, ctx.name || "Evento");
+
+      setFormValue(updateEventForm, "id", ctx.id);
+      setFormValue(updateEventForm, "name", ctx.name);
+      setFormValue(updateEventForm, "place", ctx.place);
+      setFormValue(updateEventForm, "date", ctx.date);
+      setFormValue(updateEventForm, "hour", normalizeTime(ctx.hour));
+      setFormValue(updateEventForm, "price", ctx.price);
+      setFormValue(updateEventForm, "maximun_capacity", ctx.capacity);
+      setFormValue(updateEventForm, "poster_image", ctx.poster);
+
+      openModal(updateModal);
+      return;
+    }
+
+    setText(deleteEventIdEl, ctx.id);
+    setText(deleteEventNameEl, ctx.name || "Evento");
+    openModal(deleteModal);
+  });
+}
