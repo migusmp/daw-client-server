@@ -4,6 +4,7 @@ require_once __DIR__ . "/controllers/HomeController.php";
 require_once __DIR__ . "/controllers/AuthController.php";
 require_once __DIR__ . "/controllers/AdminController.php";
 require_once __DIR__ . "/controllers/CompanyController.php";
+require_once __DIR__ . "/controllers/EventController.php";
 
 $router = new Router();
 
@@ -21,11 +22,15 @@ $router->get("/admin", [AdminController::class, 'index']);
 $router->get("/api/admin/users", [AdminController::class, 'getUsers']);
 
 // COMPANIES PAGES
-$router->get("/admin/company", [CompanyController::class, "showPage"]);
+$router->get("/admin/company", [CompanyController::class, 'showPage']);
+$router->get("/admin/manage-companies", [CompanyController::class, 'manageCompanies']);
 
 // COMPANIES API
 $router->get("/api/companies", [CompanyController::class, 'getAll']);
 $router->get("/api/companies/show", [CompanyController::class, "getOne"]);
 $router->get("/api/company/events", [CompanyController::class, 'getEventsByCompany']);
+
+// EVENTS PAGES
+$router->get("/admin/manage-events", [EventController::class, 'manageEvent']);
 
 $router->resolve();

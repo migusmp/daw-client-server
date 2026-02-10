@@ -49,6 +49,15 @@ class CompanyController
         require_once __DIR__ . "/../views/admin/company/company_show.php";
     }
 
+    public function manageCompanies() {
+        if (!$this->checkIfIsAdmin()) {
+            header("Location: /login");
+            exit;
+        }
+
+        require_once __DIR__ . "/../views/admin/company/manage_companies.php";
+    }
+
     public function getOne()
     {
         if (!$this->checkIfIsAdmin()) {

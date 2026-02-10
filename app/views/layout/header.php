@@ -43,17 +43,19 @@ $profileTitle = $isAuthenticated ? ($_SESSION['user_name'] ?? 'Perfil') : 'Perfi
                 <div class="site-brand-group">
                     <a class="site-brand" href="/"><?= htmlspecialchars($appName, ENT_QUOTES, 'UTF-8') ?></a>
                     <?php if ($isAdminHeader): ?>
-                        <span class="site-header__badge">Administración</span>
+                        <span class="site-header__badge">Panel de Administración</span>
                     <?php endif; ?>
                 </div>
                 <nav class="site-nav site-nav--desktop" aria-label="Navegación">
                     <?php if ($isAdminHeader): ?>
                         <a class="site-nav__link <?= $path === '/admin' ? 'is-active' : '' ?>" href="/admin">Panel</a>
-                        <a class="site-nav__link" href="/">Portal</a>
+                        <a class="site-nav__link <?= $path === '/admin/manage-companies' ? 'is-active' : '' ?>" href="/admin/manage-companies">Empresas</a>
+                        <a class="site-nav__link <?= $path === '/admin/manage-events' ? 'is-active' : '' ?>" href="/admin/manage-events">Eventos</a>
+                        <a class="site-nav__link" href="/">Volver al Portal</a>
                     <?php else: ?>
                         <a class="site-nav__link <?= $path === '/' ? 'is-active' : '' ?>" href="/">Inicio</a>
                         <?php if ($isAdminUser): ?>
-                            <a class="site-nav__link <?= $path === '/admin' ? 'is-active' : '' ?>" href="/admin">Administración</a>
+                            <a class="site-nav__link <?= $path === '/admin' ? 'is-active' : '' ?>" href="/admin">Panel de Administración</a>
                         <?php endif; ?>
                         <?php if (!$isAuthenticated): ?>
                             <a class="login-nav__link" href="/login">Iniciar sesión</a>
