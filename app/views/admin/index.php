@@ -1,6 +1,6 @@
 <?php
 $title = 'Administración';
-$head = '<link rel="stylesheet" href="/assets/styles/pages/admin.css">';
+$head = '<link rel="stylesheet" href="/assets/styles/admin/admin.css">';
 $headerVariant = 'admin';
 require_once __DIR__ . "/../layout/header.php";
 ?>
