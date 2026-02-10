@@ -1,5 +1,5 @@
 <?php
-class Event
+class Event implements JsonSerializable
 {                       // <------------ NOMBRES DE LAS COLUMNAS EN LA TABLA ------------>
     private int $id;                // id_evento
     private string $name;           // nombre
@@ -138,5 +138,10 @@ class Event
             "maximun_capacity" => $this->maximun_capacity,
             "poster_image" => $this->poster_image,
         ];
+    }
+
+    public function jsonSerialize(): mixed
+    {
+        return $this->toArray();
     }
 }

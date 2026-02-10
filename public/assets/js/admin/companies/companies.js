@@ -29,7 +29,7 @@ export const loadCompanies = async (containerSelector = ".companies_list") => {
 const createRow = (company) => {
   const link = document.createElement("a");
   link.className = "company-presentation";
-  link.href = `/company.php?id=${encodeURIComponent(company.id)}`;
+  link.href = `/admin/company?id=${encodeURIComponent(company.id)}`;
 
   const companyTitle = document.createElement("h3");
   companyTitle.className = "company-name";

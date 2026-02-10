@@ -56,6 +56,21 @@ class EventRepository extends BaseRepository
         return array_map(fn($r) => $this->fromRow($r), $rows);
     }
 
+    public function findByCompanyId(int $companyId): array
+    {
+        $this->db->query("
+            SELECT *
+            FROM {$this->table}
+            WHERE id_empresa = :id_empresa
+            ORDER BY fecha DESC, hora DESC
+        ");
+        $this->db->bind(":id_empresa", $companyId);
+        $this->db->execute();
+        $rows = $this->db->results();
+
+        return array_map(fn($r) => $this->fromRow($r), $rows);
+    }
+
     public function findByCompanyName(string $companyName): array
     {
         $this->db->query("

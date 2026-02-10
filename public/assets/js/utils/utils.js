@@ -35,3 +35,12 @@ export const escapeText = (value) => {
   if (value === null || value === undefined) return "";
   return String(value);
 };
+
+export const $ = (sel) => document.querySelector(sel);
+export const getById = (sel) => document.getElementById(sel);
+
+export const getCompanyIdFromUrl = () => {
+  const params = new URLSearchParams(window.location.search);
+  const id = params.get("id");
+  return id ? Number(id) : null;
+};

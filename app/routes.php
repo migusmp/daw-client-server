@@ -20,7 +20,12 @@ $router->post("/logout", [AuthController::class, 'logout']);
 $router->get("/admin", [AdminController::class, 'index']);
 $router->get("/api/admin/users", [AdminController::class, 'getUsers']);
 
-// COMPANIES ROUTES
+// COMPANIES PAGES
+$router->get("/admin/company", [CompanyController::class, "showPage"]);
+
+// COMPANIES API
 $router->get("/api/companies", [CompanyController::class, 'getAll']);
+$router->get("/api/companies/show", [CompanyController::class, "getOne"]);
+$router->get("/api/company/events", [CompanyController::class, 'getEventsByCompany']);
 
 $router->resolve();
