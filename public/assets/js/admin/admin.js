@@ -1,3 +1,6 @@
+import { escapeText } from "../utils/utils.js";
+import { loadCompanies } from "./companies/companies.js";
+
 const selectors = {
   greeting: "[data-admin-greeting]",
   exportBtn: "[data-admin-export]",
@@ -9,11 +12,6 @@ const selectors = {
 };
 
 const $ = (sel) => document.querySelector(sel);
-
-const escapeText = (value) => {
-  if (value === null || value === undefined) return "";
-  return String(value);
-};
 
 const createRow = (user) => {
   const row = document.createElement("div");
@@ -146,4 +144,5 @@ const handleExport = () => {
 
 updateGreeting();
 loadUsers();
+loadCompanies(".companies_list");
 handleExport();

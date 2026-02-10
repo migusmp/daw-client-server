@@ -28,7 +28,7 @@ require_once __DIR__ . "/../layout/header.php";
 </section>
 
 <section class="admin-section" aria-label="Resumen general">
-    <h2 class="admin-section__title">Resumen</h2>
+    <h2 class="admin-section__title">Resumen Usuarios</h2><br>
     <div class="admin-stats">
         <article class="admin-card">
             <span class="admin-card__label">Usuarios</span>
@@ -48,6 +48,15 @@ require_once __DIR__ . "/../layout/header.php";
     </div>
 </section>
 
+<section class="companies-section" aria-label="Empresas registradas">
+    <div class="companies-header">
+        <h2 class="companies-title">Empresas registradas</h2>
+        <p class="companies-subtitle">Listado de empresas dadas de alta en el portal.</p>
+    </div>
+
+    <div class="companies_list"></div>
+</section>
+
 <section class="admin-section" aria-label="Usuarios recientes">
     <div class="admin-section__header">
         <h2 class="admin-section__title">Usuarios recientes</h2>
@@ -58,5 +67,5 @@ require_once __DIR__ . "/../layout/header.php";
     </div>
 </section>
 
-<script type="module" src="/assets/js/pages/admin.js"></script>
+<script type="module" src="/assets/js/admin/admin.js"></script>
 <?php require_once __DIR__ . "/../layout/footer.php"; ?>

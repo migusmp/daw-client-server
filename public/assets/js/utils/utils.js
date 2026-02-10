@@ -30,3 +30,8 @@ export const redirectTo = (path, delayMs = 0) => {
     doRedirect();
   }
 };
+
+export const escapeText = (value) => {
+  if (value === null || value === undefined) return "";
+  return String(value);
+};
