@@ -21,6 +21,6 @@ $router->get("/admin", [AdminController::class, 'index']);
 $router->get("/api/admin/users", [AdminController::class, 'getUsers']);
 
 // COMPANIES ROUTES
-$router->get("/api/companies", [CompanyController::class, 'getAll']); // TODO: Probar endpoint
+$router->get("/api/companies", [CompanyController::class, 'getAll']);
 
 $router->resolve();
