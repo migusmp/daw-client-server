@@ -59,6 +59,31 @@ require_once __DIR__ . "/../../layout/header.php";
         <button class="mc-btn" type="button" data-companies-reload>Recargar</button>
       </header>
 
+      <div class="mc-filters" aria-label="Filtros de empresas">
+        <label class="mc-filter">
+          <span>Buscar</span>
+          <input type="search" placeholder="Nombre, ciudad o contacto" data-company-filter-query />
+        </label>
+
+        <label class="mc-filter">
+          <span>Ciudad</span>
+          <select data-company-filter-city>
+            <option value="">Todas</option>
+          </select>
+        </label>
+
+        <label class="mc-filter">
+          <span>Contacto</span>
+          <select data-company-filter-contact>
+            <option value="all">Todos</option>
+            <option value="complete">Completo</option>
+            <option value="incomplete">Incompleto</option>
+          </select>
+        </label>
+
+        <button class="mc-btn mc-btn--ghost" type="button" data-company-filters-reset>Limpiar filtros</button>
+      </div>
+
       <div class="mc-table" role="table" aria-label="Tabla de empresas">
         <div class="mc-table__head" role="row">
           <span>Empresa</span>

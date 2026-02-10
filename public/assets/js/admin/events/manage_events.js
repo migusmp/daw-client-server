@@ -14,6 +14,12 @@ const selectors = {
   total: "[data-events-total]",
   avgPrice: "[data-events-price-average]",
   totalCapacity: "[data-events-capacity-total]",
+  filterQuery: "[data-event-filter-query]",
+  filterCompany: "[data-event-filter-company]",
+  filterType: "[data-event-filter-type]",
+  filterFrom: "[data-event-filter-from]",
+  filterTo: "[data-event-filter-to]",
+  filterReset: "[data-event-filters-reset]",
 };
 
 const state = {
@@ -21,6 +27,13 @@ const state = {
   companies: [],
   eventTypes: [],
   editingId: 0,
+  filters: {
+    query: "",
+    companyId: "",
+    eventTypeId: "",
+    dateFrom: "",
+    dateTo: "",
+  },
 };
 
 const $ = (sel) => document.querySelector(sel);
@@ -40,6 +53,12 @@ const eventTypeSelect = $(selectors.eventTypeSelect);
 const totalEl = $(selectors.total);
 const avgPriceEl = $(selectors.avgPrice);
 const totalCapacityEl = $(selectors.totalCapacity);
+const filterQueryInput = $(selectors.filterQuery);
+const filterCompanySelect = $(selectors.filterCompany);
+const filterTypeSelect = $(selectors.filterType);
+const filterFromInput = $(selectors.filterFrom);
+const filterToInput = $(selectors.filterTo);
+const filterResetBtn = $(selectors.filterReset);
 
 const setStatus = (message = "", type = "") => {
   if (!statusBox) return;
@@ -58,6 +77,8 @@ const text = (value, fallback = "—") => {
   const current = String(value).trim();
   return current === "" ? fallback : current;
 };
+
+const normalizeText = (value) => String(value ?? "").trim().toLowerCase();
 
 const normalizeHour = (value) => {
   const hour = text(value, "");
@@ -191,6 +212,74 @@ const renderEvents = (events) => {
   events.forEach((event) => listBox.append(buildEventCard(event)));
 };
 
+const syncEventFiltersFromInputs = () => {
+  state.filters.query = normalizeText(filterQueryInput?.value ?? "");
+  state.filters.companyId = String(filterCompanySelect?.value || "");
+  state.filters.eventTypeId = String(filterTypeSelect?.value || "");
+  state.filters.dateFrom = String(filterFromInput?.value || "");
+  state.filters.dateTo = String(filterToInput?.value || "");
+};
+
+const getFilteredEvents = () => {
+  const { query, companyId, eventTypeId, dateFrom, dateTo } = state.filters;
+
+  return state.events.filter((event) => {
+    if (companyId && String(event.id_company) !== companyId) {
+      return false;
+    }
+
+    if (eventTypeId && String(event.id_event_type) !== eventTypeId) {
+      return false;
+    }
+
+    if (dateFrom || dateTo) {
+      const eventDate = text(event.date, "");
+      if (!eventDate) return false;
+      if (dateFrom && eventDate < dateFrom) return false;
+      if (dateTo && eventDate > dateTo) return false;
+    }
+
+    if (!query) {
+      return true;
+    }
+
+    const searchable = [
+      event.name,
+      event.place,
+      event.company_name,
+      event.event_type_name,
+      event.date,
+      event.hour,
+    ]
+      .map((value) => normalizeText(value))
+      .join(" ");
+
+    return searchable.includes(query);
+  });
+};
+
+const applyEventFilters = () => {
+  syncEventFiltersFromInputs();
+
+  const filtered = getFilteredEvents();
+  const total = state.events.length;
+
+  renderEvents(filtered);
+  updateStats(filtered);
+
+  if (!total) {
+    setHint("No hay eventos registrados.");
+    return;
+  }
+
+  if (filtered.length === total) {
+    setHint(`Mostrando ${filtered.length} eventos`);
+    return;
+  }
+
+  setHint(`Mostrando ${filtered.length} de ${total} eventos`);
+};
+
 const resetForm = () => {
   if (!form) return;
   form.reset();
@@ -258,6 +347,8 @@ const loadLookups = async () => {
 
   populateSelect(companySelect, state.companies, "Selecciona empresa");
   populateSelect(eventTypeSelect, state.eventTypes, "Selecciona tipo");
+  populateSelect(filterCompanySelect, state.companies, "Todas las empresas", state.filters.companyId);
+  populateSelect(filterTypeSelect, state.eventTypes, "Todos los tipos", state.filters.eventTypeId);
 };
 
 const loadEvents = async () => {
@@ -266,9 +357,7 @@ const loadEvents = async () => {
     const payload = await fetchJson("/api/events", { method: "GET" });
     const events = Array.isArray(payload?.data) ? payload.data : [];
     state.events = events;
-    renderEvents(events);
-    updateStats(events);
-    setHint(`Mostrando ${events.length} eventos`);
+    applyEventFilters();
   } catch (error) {
     state.events = [];
     renderEvents([]);
@@ -371,6 +460,21 @@ if (newBtn) {
     if (firstField && !(typeof RadioNodeList !== "undefined" && firstField instanceof RadioNodeList)) {
       firstField.focus();
     }
+  });
+}
+if (filterQueryInput) filterQueryInput.addEventListener("input", applyEventFilters);
+if (filterCompanySelect) filterCompanySelect.addEventListener("change", applyEventFilters);
+if (filterTypeSelect) filterTypeSelect.addEventListener("change", applyEventFilters);
+if (filterFromInput) filterFromInput.addEventListener("change", applyEventFilters);
+if (filterToInput) filterToInput.addEventListener("change", applyEventFilters);
+if (filterResetBtn) {
+  filterResetBtn.addEventListener("click", () => {
+    if (filterQueryInput) filterQueryInput.value = "";
+    if (filterCompanySelect) filterCompanySelect.value = "";
+    if (filterTypeSelect) filterTypeSelect.value = "";
+    if (filterFromInput) filterFromInput.value = "";
+    if (filterToInput) filterToInput.value = "";
+    applyEventFilters();
   });
 }
 

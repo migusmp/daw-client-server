@@ -59,6 +59,39 @@ require_once __DIR__ . "/../../layout/header.php";
         <button class="me-btn" type="button" data-events-reload>Recargar</button>
       </header>
 
+      <div class="me-filters" aria-label="Filtros de eventos">
+        <label class="me-filter">
+          <span>Buscar</span>
+          <input type="search" placeholder="Nombre, lugar o palabra clave" data-event-filter-query />
+        </label>
+
+        <label class="me-filter">
+          <span>Empresa</span>
+          <select data-event-filter-company>
+            <option value="">Todas</option>
+          </select>
+        </label>
+
+        <label class="me-filter">
+          <span>Tipo</span>
+          <select data-event-filter-type>
+            <option value="">Todos</option>
+          </select>
+        </label>
+
+        <label class="me-filter">
+          <span>Desde</span>
+          <input type="date" data-event-filter-from />
+        </label>
+
+        <label class="me-filter">
+          <span>Hasta</span>
+          <input type="date" data-event-filter-to />
+        </label>
+
+        <button class="me-btn me-btn--ghost" type="button" data-event-filters-reset>Limpiar filtros</button>
+      </div>
+
       <div class="me-cards" data-events-list>
         <article class="me-event-card">
           <p class="me-event-card__date">—</p>

@@ -12,11 +12,20 @@ const selectors = {
   total: "[data-company-total]",
   complete: "[data-company-complete]",
   cities: "[data-company-cities]",
+  filterQuery: "[data-company-filter-query]",
+  filterCity: "[data-company-filter-city]",
+  filterContact: "[data-company-filter-contact]",
+  filterReset: "[data-company-filters-reset]",
 };
 
 const state = {
   companies: [],
   editingId: 0,
+  filters: {
+    query: "",
+    city: "",
+    contact: "all",
+  },
 };
 
 const $ = (sel) => document.querySelector(sel);
@@ -34,6 +43,10 @@ const newBtn = $(selectors.newBtn);
 const totalEl = $(selectors.total);
 const completeEl = $(selectors.complete);
 const citiesEl = $(selectors.cities);
+const filterQueryInput = $(selectors.filterQuery);
+const filterCitySelect = $(selectors.filterCity);
+const filterContactSelect = $(selectors.filterContact);
+const filterResetBtn = $(selectors.filterReset);
 
 const setStatus = (message = "", type = "") => {
   if (!statusBox) return;
@@ -51,6 +64,14 @@ const toText = (value, fallback = "—") => {
   if (value === null || value === undefined) return fallback;
   const text = String(value).trim();
   return text === "" ? fallback : text;
+};
+
+const normalizeText = (value) => String(value ?? "").trim().toLowerCase();
+
+const hasCompleteContact = (company) => {
+  const hasEmail = normalizeText(company.email_person_in_charge) !== "";
+  const hasPhone = normalizeText(company.number_person_in_charge) !== "";
+  return hasEmail && hasPhone;
 };
 
 const fetchJson = async (url, options = {}) => {
@@ -73,11 +94,7 @@ const fetchJson = async (url, options = {}) => {
 
 const updateStats = (companies) => {
   const total = companies.length;
-  const complete = companies.filter((company) => {
-    const hasEmail = toText(company.email_person_in_charge, "") !== "";
-    const hasPhone = toText(company.number_person_in_charge, "") !== "";
-    return hasEmail && hasPhone;
-  }).length;
+  const complete = companies.filter((company) => hasCompleteContact(company)).length;
 
   const uniqueCities = new Set(
     companies
@@ -89,6 +106,44 @@ const updateStats = (companies) => {
   if (totalEl) totalEl.textContent = String(total);
   if (completeEl) completeEl.textContent = String(complete);
   if (citiesEl) citiesEl.textContent = String(uniqueCities);
+};
+
+const populateCityFilter = (companies) => {
+  if (!filterCitySelect) return;
+
+  const previous = normalizeText(filterCitySelect.value);
+  const cityMap = new Map();
+
+  companies.forEach((company) => {
+    const rawCity = String(company.city ?? "").trim();
+    if (!rawCity) return;
+    const key = normalizeText(rawCity);
+    if (!cityMap.has(key)) {
+      cityMap.set(key, rawCity);
+    }
+  });
+
+  const orderedCities = [...cityMap.entries()].sort((a, b) =>
+    a[1].localeCompare(b[1], "es", { sensitivity: "base" }),
+  );
+
+  filterCitySelect.innerHTML = "";
+
+  const allOption = document.createElement("option");
+  allOption.value = "";
+  allOption.textContent = "Todas";
+  filterCitySelect.append(allOption);
+
+  orderedCities.forEach(([key, label]) => {
+    const option = document.createElement("option");
+    option.value = key;
+    option.textContent = label;
+    filterCitySelect.append(option);
+  });
+
+  if (previous && cityMap.has(previous)) {
+    filterCitySelect.value = previous;
+  }
 };
 
 const buildRow = (company) => {
@@ -149,6 +204,70 @@ const renderCompanies = (companies) => {
   companies.forEach((company) => rowsBox.append(buildRow(company)));
 };
 
+const syncFiltersFromInputs = () => {
+  state.filters.query = normalizeText(filterQueryInput?.value ?? "");
+  state.filters.city = normalizeText(filterCitySelect?.value ?? "");
+
+  const contactFilter = String(filterContactSelect?.value || "all");
+  state.filters.contact = ["all", "complete", "incomplete"].includes(contactFilter) ? contactFilter : "all";
+};
+
+const getFilteredCompanies = () => {
+  const { query, city, contact } = state.filters;
+
+  return state.companies.filter((company) => {
+    if (city && normalizeText(company.city) !== city) {
+      return false;
+    }
+
+    if (contact === "complete" && !hasCompleteContact(company)) {
+      return false;
+    }
+
+    if (contact === "incomplete" && hasCompleteContact(company)) {
+      return false;
+    }
+
+    if (!query) {
+      return true;
+    }
+
+    const searchable = [
+      company.name,
+      company.city,
+      company.creation_year,
+      company.email_person_in_charge,
+      company.number_person_in_charge,
+    ]
+      .map((value) => normalizeText(value))
+      .join(" ");
+
+    return searchable.includes(query);
+  });
+};
+
+const applyCompanyFilters = () => {
+  syncFiltersFromInputs();
+
+  const filtered = getFilteredCompanies();
+  const total = state.companies.length;
+
+  renderCompanies(filtered);
+  updateStats(filtered);
+
+  if (!total) {
+    setHint("No hay empresas registradas.");
+    return;
+  }
+
+  if (filtered.length === total) {
+    setHint(`Mostrando ${filtered.length} empresas`);
+    return;
+  }
+
+  setHint(`Mostrando ${filtered.length} de ${total} empresas`);
+};
+
 const resetForm = () => {
   if (!form) return;
 
@@ -198,13 +317,13 @@ const loadCompanies = async () => {
     const companies = Array.isArray(payload?.data) ? payload.data : [];
     state.companies = companies;
 
-    renderCompanies(companies);
-    updateStats(companies);
-    setHint(`Mostrando ${companies.length} empresas`);
+    populateCityFilter(companies);
+    applyCompanyFilters();
   } catch (error) {
     state.companies = [];
     renderCompanies([]);
     updateStats([]);
+    populateCityFilter([]);
     setHint("No se pudieron cargar las empresas.");
     setStatus(error.message || "Error cargando empresas", "error");
   }
@@ -299,6 +418,17 @@ if (newBtn) {
     if (firstField && !(typeof RadioNodeList !== "undefined" && firstField instanceof RadioNodeList)) {
       firstField.focus();
     }
+  });
+}
+if (filterQueryInput) filterQueryInput.addEventListener("input", applyCompanyFilters);
+if (filterCitySelect) filterCitySelect.addEventListener("change", applyCompanyFilters);
+if (filterContactSelect) filterContactSelect.addEventListener("change", applyCompanyFilters);
+if (filterResetBtn) {
+  filterResetBtn.addEventListener("click", () => {
+    if (filterQueryInput) filterQueryInput.value = "";
+    if (filterCitySelect) filterCitySelect.value = "";
+    if (filterContactSelect) filterContactSelect.value = "all";
+    applyCompanyFilters();
   });
 }
 
