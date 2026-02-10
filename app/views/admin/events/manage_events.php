@@ -180,6 +180,19 @@ require_once __DIR__ . "/../../layout/header.php";
       </article>
     </aside>
   </section>
+
+  <div class="me-modal" data-event-delete-modal hidden>
+    <button class="me-modal__backdrop" type="button" data-event-delete-cancel aria-label="Cerrar confirmación"></button>
+    <div class="me-modal__dialog" role="dialog" aria-modal="true" aria-labelledby="me-delete-title">
+      <button class="me-modal__close" type="button" data-event-delete-cancel aria-label="Cerrar">×</button>
+      <h3 class="me-modal__title" id="me-delete-title">Confirmar eliminación</h3>
+      <p class="me-modal__text" data-event-delete-message></p>
+      <div class="me-modal__actions">
+        <button class="me-btn" type="button" data-event-delete-cancel>Cancelar</button>
+        <button class="me-btn me-btn--danger" type="button" data-event-delete-confirm>Eliminar</button>
+      </div>
+    </div>
+  </div>
 </section>
 
 <script type="module" src="/assets/js/admin/events/manage_events.js"></script>

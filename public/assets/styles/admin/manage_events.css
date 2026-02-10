@@ -113,6 +113,18 @@ html[data-theme="dark"] .manage-events__kicker {
   background: rgba(2, 132, 199, 0.17);
 }
 
+.me-btn--danger {
+  border-color: rgba(239, 68, 68, 0.45);
+  background: #dc2626;
+  color: #ffffff;
+  box-shadow: 0 10px 24px rgba(220, 38, 38, 0.35);
+}
+
+.me-btn--danger:hover {
+  border-color: rgba(239, 68, 68, 0.6);
+  background: #b91c1c;
+}
+
 .manage-events__hero-card {
   border: 1px solid var(--border);
   border-radius: 18px;
@@ -256,6 +268,99 @@ html[data-theme="dark"] .me-filter select {
   outline: none;
   border-color: rgba(2, 132, 199, 0.65);
   box-shadow: 0 0 0 4px rgba(2, 132, 199, 0.16);
+}
+
+.admin-modal-open {
+  overflow: hidden;
+}
+
+.me-modal {
+  position: fixed;
+  inset: 0;
+  z-index: 2000;
+  display: grid;
+  place-items: center;
+  padding: 18px;
+}
+
+.me-modal[hidden] {
+  display: none;
+}
+
+.me-modal__backdrop {
+  position: absolute;
+  inset: 0;
+  border: 0;
+  background: rgba(3, 7, 18, 0.62);
+  backdrop-filter: blur(4px);
+  cursor: pointer;
+}
+
+.me-modal__dialog {
+  position: relative;
+  width: min(480px, calc(100vw - 36px));
+  border-radius: 20px;
+  border: 1px solid var(--border);
+  background: var(--card-bg);
+  box-shadow: 0 30px 90px rgba(3, 7, 18, 0.35);
+  padding: 18px;
+  display: grid;
+  gap: 12px;
+  animation: me-modal-pop 0.18s ease;
+}
+
+html[data-theme="dark"] .me-modal__dialog {
+  box-shadow: 0 30px 100px rgba(0, 0, 0, 0.6);
+}
+
+.me-modal__close {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  width: 34px;
+  height: 34px;
+  border-radius: 999px;
+  border: 1px solid var(--border);
+  background: transparent;
+  color: var(--muted);
+  font-size: 1.15rem;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.me-modal__close:hover {
+  background: rgba(2, 132, 199, 0.1);
+  color: var(--text);
+}
+
+.me-modal__title {
+  margin: 0;
+  padding-right: 40px;
+  font-size: 1.12rem;
+}
+
+.me-modal__text {
+  margin: 0;
+  color: var(--muted);
+  line-height: 1.5;
+}
+
+.me-modal__actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+@keyframes me-modal-pop {
+  from {
+    transform: translateY(12px) scale(0.98);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0) scale(1);
+    opacity: 1;
+  }
 }
 
 .me-cards {

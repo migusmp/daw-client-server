@@ -16,11 +16,16 @@ const selectors = {
   filterCity: "[data-company-filter-city]",
   filterContact: "[data-company-filter-contact]",
   filterReset: "[data-company-filters-reset]",
+  deleteModal: "[data-company-delete-modal]",
+  deleteMessage: "[data-company-delete-message]",
+  deleteConfirm: "[data-company-delete-confirm]",
+  deleteCancel: "[data-company-delete-cancel]",
 };
 
 const state = {
   companies: [],
   editingId: 0,
+  pendingDeleteId: 0,
   filters: {
     query: "",
     city: "",
@@ -47,6 +52,10 @@ const filterQueryInput = $(selectors.filterQuery);
 const filterCitySelect = $(selectors.filterCity);
 const filterContactSelect = $(selectors.filterContact);
 const filterResetBtn = $(selectors.filterReset);
+const deleteModal = $(selectors.deleteModal);
+const deleteMessage = $(selectors.deleteMessage);
+const deleteConfirmBtn = $(selectors.deleteConfirm);
+const deleteCancelButtons = document.querySelectorAll(selectors.deleteCancel);
 
 const setStatus = (message = "", type = "") => {
   if (!statusBox) return;
@@ -268,6 +277,40 @@ const applyCompanyFilters = () => {
   setHint(`Mostrando ${filtered.length} de ${total} empresas`);
 };
 
+const setDeleteModalOpen = (open) => {
+  if (!deleteModal) return;
+
+  deleteModal.hidden = !open;
+  deleteModal.classList.toggle("is-open", open);
+  document.body.classList.toggle("admin-modal-open", open);
+};
+
+const openDeleteModal = (company) => {
+  state.pendingDeleteId = Number(company.id || 0);
+
+  if (deleteMessage) {
+    deleteMessage.textContent = `Vas a eliminar la empresa "${toText(company.name, "Sin nombre")}". Esta acción no se puede deshacer.`;
+  }
+
+  setDeleteModalOpen(true);
+};
+
+const closeDeleteModal = () => {
+  state.pendingDeleteId = 0;
+  setDeleteModalOpen(false);
+};
+
+const confirmDeleteCompany = async () => {
+  const id = Number(state.pendingDeleteId || 0);
+  if (!id) {
+    closeDeleteModal();
+    return;
+  }
+
+  closeDeleteModal();
+  await deleteCompany(id);
+};
+
 const resetForm = () => {
   if (!form) return;
 
@@ -396,9 +439,7 @@ const onTableClick = async (e) => {
   }
 
   if (action === "delete") {
-    const accepted = window.confirm(`¿Eliminar la empresa "${toText(company.name, "Sin nombre")}"?`);
-    if (!accepted) return;
-    await deleteCompany(id);
+    openDeleteModal(company);
   }
 };
 
@@ -431,5 +472,16 @@ if (filterResetBtn) {
     applyCompanyFilters();
   });
 }
+if (deleteConfirmBtn) deleteConfirmBtn.addEventListener("click", confirmDeleteCompany);
+if (deleteCancelButtons.length) {
+  deleteCancelButtons.forEach((button) => {
+    button.addEventListener("click", closeDeleteModal);
+  });
+}
+document.addEventListener("keydown", (event) => {
+  if (event.key === "Escape" && deleteModal && !deleteModal.hidden) {
+    closeDeleteModal();
+  }
+});
 
 loadCompanies();

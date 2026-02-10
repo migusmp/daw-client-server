@@ -20,6 +20,10 @@ const selectors = {
   filterFrom: "[data-event-filter-from]",
   filterTo: "[data-event-filter-to]",
   filterReset: "[data-event-filters-reset]",
+  deleteModal: "[data-event-delete-modal]",
+  deleteMessage: "[data-event-delete-message]",
+  deleteConfirm: "[data-event-delete-confirm]",
+  deleteCancel: "[data-event-delete-cancel]",
 };
 
 const state = {
@@ -27,6 +31,7 @@ const state = {
   companies: [],
   eventTypes: [],
   editingId: 0,
+  pendingDeleteId: 0,
   filters: {
     query: "",
     companyId: "",
@@ -59,6 +64,10 @@ const filterTypeSelect = $(selectors.filterType);
 const filterFromInput = $(selectors.filterFrom);
 const filterToInput = $(selectors.filterTo);
 const filterResetBtn = $(selectors.filterReset);
+const deleteModal = $(selectors.deleteModal);
+const deleteMessage = $(selectors.deleteMessage);
+const deleteConfirmBtn = $(selectors.deleteConfirm);
+const deleteCancelButtons = document.querySelectorAll(selectors.deleteCancel);
 
 const setStatus = (message = "", type = "") => {
   if (!statusBox) return;
@@ -280,6 +289,40 @@ const applyEventFilters = () => {
   setHint(`Mostrando ${filtered.length} de ${total} eventos`);
 };
 
+const setDeleteModalOpen = (open) => {
+  if (!deleteModal) return;
+
+  deleteModal.hidden = !open;
+  deleteModal.classList.toggle("is-open", open);
+  document.body.classList.toggle("admin-modal-open", open);
+};
+
+const openDeleteModal = (event) => {
+  state.pendingDeleteId = Number(event.id || 0);
+
+  if (deleteMessage) {
+    deleteMessage.textContent = `Vas a eliminar el evento "${text(event.name, "Sin nombre")}". Esta acción no se puede deshacer.`;
+  }
+
+  setDeleteModalOpen(true);
+};
+
+const closeDeleteModal = () => {
+  state.pendingDeleteId = 0;
+  setDeleteModalOpen(false);
+};
+
+const confirmDeleteEvent = async () => {
+  const id = Number(state.pendingDeleteId || 0);
+  if (!id) {
+    closeDeleteModal();
+    return;
+  }
+
+  closeDeleteModal();
+  await deleteEvent(id);
+};
+
 const resetForm = () => {
   if (!form) return;
   form.reset();
@@ -404,10 +447,10 @@ const submitForm = async (e) => {
   }
 };
 
-const deleteEvent = async (event) => {
+const deleteEvent = async (id) => {
   try {
     setStatus("Eliminando evento...");
-    await fetchJson(`/api/events?id=${encodeURIComponent(event.id)}`, {
+    await fetchJson(`/api/events?id=${encodeURIComponent(id)}`, {
       method: "DELETE",
     });
     setStatus("Evento eliminado correctamente.", "success");
@@ -438,9 +481,7 @@ const onListClick = async (e) => {
   }
 
   if (action === "delete") {
-    const accepted = window.confirm(`¿Eliminar el evento "${text(event.name, "Sin nombre")}"?`);
-    if (!accepted) return;
-    await deleteEvent(event);
+    openDeleteModal(event);
   }
 };
 
@@ -477,6 +518,17 @@ if (filterResetBtn) {
     applyEventFilters();
   });
 }
+if (deleteConfirmBtn) deleteConfirmBtn.addEventListener("click", confirmDeleteEvent);
+if (deleteCancelButtons.length) {
+  deleteCancelButtons.forEach((button) => {
+    button.addEventListener("click", closeDeleteModal);
+  });
+}
+document.addEventListener("keydown", (event) => {
+  if (event.key === "Escape" && deleteModal && !deleteModal.hidden) {
+    closeDeleteModal();
+  }
+});
 
 const init = async () => {
   try {

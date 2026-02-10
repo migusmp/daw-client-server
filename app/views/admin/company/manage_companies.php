@@ -157,6 +157,19 @@ require_once __DIR__ . "/../../layout/header.php";
       </article>
     </aside>
   </section>
+
+  <div class="mc-modal" data-company-delete-modal hidden>
+    <button class="mc-modal__backdrop" type="button" data-company-delete-cancel aria-label="Cerrar confirmación"></button>
+    <div class="mc-modal__dialog" role="dialog" aria-modal="true" aria-labelledby="mc-delete-title">
+      <button class="mc-modal__close" type="button" data-company-delete-cancel aria-label="Cerrar">×</button>
+      <h3 class="mc-modal__title" id="mc-delete-title">Confirmar eliminación</h3>
+      <p class="mc-modal__text" data-company-delete-message></p>
+      <div class="mc-modal__actions">
+        <button class="mc-btn" type="button" data-company-delete-cancel>Cancelar</button>
+        <button class="mc-btn mc-btn--danger" type="button" data-company-delete-confirm>Eliminar</button>
+      </div>
+    </div>
+  </div>
 </section>
 
 <script type="module" src="/assets/js/admin/companies/manage_companies.js"></script>

@@ -109,6 +109,18 @@ html[data-theme="dark"] .manage-companies__hero {
   background: rgba(var(--accent-rgb), 0.16);
 }
 
+.mc-btn--danger {
+  border-color: rgba(239, 68, 68, 0.45);
+  background: #dc2626;
+  color: #ffffff;
+  box-shadow: 0 10px 24px rgba(220, 38, 38, 0.35);
+}
+
+.mc-btn--danger:hover {
+  border-color: rgba(239, 68, 68, 0.6);
+  background: #b91c1c;
+}
+
 .manage-companies__hero-card {
   border: 1px solid var(--border);
   border-radius: 18px;
@@ -252,6 +264,99 @@ html[data-theme="dark"] .mc-filter select {
   outline: none;
   border-color: rgba(var(--accent-rgb), 0.65);
   box-shadow: 0 0 0 4px rgba(var(--accent-rgb), 0.16);
+}
+
+.admin-modal-open {
+  overflow: hidden;
+}
+
+.mc-modal {
+  position: fixed;
+  inset: 0;
+  z-index: 2000;
+  display: grid;
+  place-items: center;
+  padding: 18px;
+}
+
+.mc-modal[hidden] {
+  display: none;
+}
+
+.mc-modal__backdrop {
+  position: absolute;
+  inset: 0;
+  border: 0;
+  background: rgba(3, 7, 18, 0.62);
+  backdrop-filter: blur(4px);
+  cursor: pointer;
+}
+
+.mc-modal__dialog {
+  position: relative;
+  width: min(480px, calc(100vw - 36px));
+  border-radius: 20px;
+  border: 1px solid var(--border);
+  background: var(--card-bg);
+  box-shadow: 0 30px 90px rgba(3, 7, 18, 0.35);
+  padding: 18px;
+  display: grid;
+  gap: 12px;
+  animation: mc-modal-pop 0.18s ease;
+}
+
+html[data-theme="dark"] .mc-modal__dialog {
+  box-shadow: 0 30px 100px rgba(0, 0, 0, 0.6);
+}
+
+.mc-modal__close {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  width: 34px;
+  height: 34px;
+  border-radius: 999px;
+  border: 1px solid var(--border);
+  background: transparent;
+  color: var(--muted);
+  font-size: 1.15rem;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.mc-modal__close:hover {
+  background: rgba(var(--accent-rgb), 0.1);
+  color: var(--text);
+}
+
+.mc-modal__title {
+  margin: 0;
+  padding-right: 40px;
+  font-size: 1.12rem;
+}
+
+.mc-modal__text {
+  margin: 0;
+  color: var(--muted);
+  line-height: 1.5;
+}
+
+.mc-modal__actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+@keyframes mc-modal-pop {
+  from {
+    transform: translateY(12px) scale(0.98);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0) scale(1);
+    opacity: 1;
+  }
 }
 
 .mc-table {
