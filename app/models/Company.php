@@ -1,5 +1,5 @@
 <?php
-class Company
+class Company implements JsonSerializable
 {
     private int $id;                            // id_empresa
     private string $name;                       // nombre
@@ -86,5 +86,10 @@ class Company
             "email_person_in_charge" => $this->email_person_in_charge,
             "number_person_in_charge" => $this->number_person_in_charge,
         ];
+    }
+
+    public function jsonSerialize(): mixed
+    {
+        return $this->toArray();
     }
 }
