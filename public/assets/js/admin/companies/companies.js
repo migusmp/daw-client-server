@@ -27,8 +27,9 @@ export const loadCompanies = async (containerSelector = ".companies_list") => {
 };
 
 const createRow = (company) => {
-  const companyDiv = document.createElement("div");
-  companyDiv.className = "company-presentation";
+  const link = document.createElement("a");
+  link.className = "company-presentation";
+  link.href = `/company.php?id=${encodeURIComponent(company.id)}`;
 
   const companyTitle = document.createElement("h3");
   companyTitle.className = "company-name";
@@ -44,8 +45,8 @@ const createRow = (company) => {
     company.creation_year || "Sin año de creación",
   );
 
-  companyDiv.append(companyTitle, city, creationYear);
-  return companyDiv;
+  link.append(companyTitle, city, creationYear);
+  return link;
 };
 
 export const renderCompanies = (companies = [], containerEl) => {
