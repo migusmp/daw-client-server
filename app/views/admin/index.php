@@ -2,6 +2,7 @@
 $title = 'Administración';
 $head = '<link rel="stylesheet" href="/assets/styles/admin/admin.css">';
 $headerVariant = 'admin';
+$containerClass = 'admin-page';
 require_once __DIR__ . "/../layout/header.php";
 ?>
 
@@ -28,7 +29,10 @@ require_once __DIR__ . "/../layout/header.php";
 </section>
 
 <section class="admin-section" aria-label="Resumen general">
-    <h2 class="admin-section__title">Resumen Usuarios</h2><br>
+    <div class="admin-section__header">
+        <h2 class="admin-section__title">Resumen de usuarios</h2>
+        <span class="admin-section__hint">Indicadores principales</span>
+    </div>
     <div class="admin-stats">
         <article class="admin-card">
             <span class="admin-card__label">Usuarios</span>

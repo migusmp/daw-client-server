@@ -68,12 +68,12 @@ require_once __DIR__ . "/../../layout/header.php";
 
         <label class="company-field">
           <span>Correo de contacto</span>
-          <input type="text" name="contact_email" placeholder="2005" min="1800" max="2100" />
+          <input type="email" name="contact_email" placeholder="correo@empresa.com" autocomplete="email" />
         </label>
 
         <label class="company-field">
           <span>Número de contacto</span>
-          <input type="text" name="contact_number" placeholder="2005" min="1800" max="2100" />
+          <input type="tel" name="contact_number" placeholder="+34 600 000 000" autocomplete="tel" />
         </label>
 
         <button class="company-btn" type="submit">Guardar cambios</button>
