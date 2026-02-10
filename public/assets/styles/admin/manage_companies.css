@@ -226,6 +226,10 @@ html[data-theme="dark"] .mc-panel {
   font-size: 0.95rem;
 }
 
+.mc-table__empty {
+  color: var(--muted);
+}
+
 .mc-table__row:nth-child(even) {
   background: rgba(15, 23, 42, 0.02);
 }
@@ -275,6 +279,53 @@ html[data-theme="dark"] .mc-badge--warn {
 
 html[data-theme="dark"] .mc-badge--block {
   color: #fecaca;
+}
+
+.mc-table__actions-cell {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  justify-self: start;
+  flex-wrap: wrap;
+}
+
+.mc-row-btn {
+  height: 34px;
+  padding: 0 10px;
+  border-radius: 999px;
+  border: 1px solid rgba(var(--accent-rgb), 0.28);
+  background: rgba(var(--accent-rgb), 0.12);
+  color: var(--text);
+  font-size: 0.78rem;
+  font-weight: 800;
+  cursor: pointer;
+  transition: transform 0.15s ease, background 0.15s ease, border-color 0.15s ease;
+}
+
+.mc-row-btn:hover {
+  transform: translateY(-1px);
+  background: rgba(var(--accent-rgb), 0.18);
+  border-color: rgba(var(--accent-rgb), 0.42);
+}
+
+.mc-row-btn:focus-visible {
+  outline: 3px solid rgba(var(--accent-rgb), 0.3);
+  outline-offset: 2px;
+}
+
+.mc-row-btn--danger {
+  border-color: rgba(239, 68, 68, 0.35);
+  background: rgba(239, 68, 68, 0.12);
+  color: #991b1b;
+}
+
+html[data-theme="dark"] .mc-row-btn--danger {
+  color: #fecaca;
+}
+
+.mc-row-btn--danger:hover {
+  background: rgba(239, 68, 68, 0.18);
+  border-color: rgba(239, 68, 68, 0.48);
 }
 
 .mc-sidebar {
@@ -329,6 +380,29 @@ html[data-theme="dark"] .mc-field select {
   flex-wrap: wrap;
 }
 
+.mc-form__status {
+  margin: 4px 0 0;
+  min-height: 22px;
+  color: var(--muted);
+  font-size: 0.9rem;
+}
+
+.mc-form__status.is-error {
+  color: #b91c1c;
+}
+
+.mc-form__status.is-success {
+  color: #047857;
+}
+
+html[data-theme="dark"] .mc-form__status.is-error {
+  color: #fecaca;
+}
+
+html[data-theme="dark"] .mc-form__status.is-success {
+  color: #bbf7d0;
+}
+
 .mc-quick-list {
   margin: 0;
   padding-left: 18px;
@@ -359,6 +433,10 @@ html[data-theme="dark"] .mc-field select {
 
   .mc-table__row span {
     overflow-wrap: anywhere;
+  }
+
+  .mc-table__actions-cell {
+    margin-top: 4px;
   }
 }
 

@@ -279,6 +279,60 @@ html[data-theme="dark"] .me-event-card__status--full {
   color: #bae6fd;
 }
 
+.me-event-card__actions {
+  margin-top: 10px;
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.me-row-btn {
+  height: 34px;
+  padding: 0 10px;
+  border-radius: 999px;
+  border: 1px solid rgba(2, 132, 199, 0.35);
+  background: rgba(2, 132, 199, 0.12);
+  color: var(--text);
+  font-size: 0.78rem;
+  font-weight: 800;
+  cursor: pointer;
+  transition: transform 0.15s ease, background 0.15s ease, border-color 0.15s ease;
+}
+
+.me-row-btn:hover {
+  transform: translateY(-1px);
+  background: rgba(2, 132, 199, 0.18);
+  border-color: rgba(2, 132, 199, 0.5);
+}
+
+.me-row-btn:focus-visible {
+  outline: 3px solid rgba(2, 132, 199, 0.28);
+  outline-offset: 2px;
+}
+
+.me-row-btn--danger {
+  border-color: rgba(239, 68, 68, 0.35);
+  background: rgba(239, 68, 68, 0.12);
+  color: #991b1b;
+}
+
+html[data-theme="dark"] .me-row-btn--danger {
+  color: #fecaca;
+}
+
+.me-row-btn--danger:hover {
+  background: rgba(239, 68, 68, 0.18);
+  border-color: rgba(239, 68, 68, 0.48);
+}
+
+.me-cards__empty {
+  margin: 0;
+  border: 1px dashed var(--border);
+  border-radius: 14px;
+  padding: 14px;
+  color: var(--muted);
+}
+
 .me-sidebar {
   display: grid;
   gap: 14px;
@@ -329,6 +383,29 @@ html[data-theme="dark"] .me-field select {
   display: flex;
   gap: 10px;
   flex-wrap: wrap;
+}
+
+.me-form__status {
+  margin: 4px 0 0;
+  min-height: 22px;
+  color: var(--muted);
+  font-size: 0.9rem;
+}
+
+.me-form__status.is-error {
+  color: #b91c1c;
+}
+
+.me-form__status.is-success {
+  color: #047857;
+}
+
+html[data-theme="dark"] .me-form__status.is-error {
+  color: #fecaca;
+}
+
+html[data-theme="dark"] .me-form__status.is-success {
+  color: #bbf7d0;
 }
 
 .me-checklist {

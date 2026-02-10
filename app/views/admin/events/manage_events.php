@@ -14,7 +14,7 @@ require_once __DIR__ . "/../../layout/header.php";
         Diseña la agenda, controla publicación y visualiza prioridades operativas en un único panel.
       </p>
       <div class="manage-events__hero-actions">
-        <button class="me-btn me-btn--primary" type="button">Crear evento</button>
+        <button class="me-btn me-btn--primary" type="button" data-event-new>Crear evento</button>
         <a class="me-btn" href="/admin">Volver al panel</a>
       </div>
     </div>
@@ -32,20 +32,20 @@ require_once __DIR__ . "/../../layout/header.php";
   <section class="manage-events__stats" aria-label="Métricas de eventos">
     <article class="me-stat">
       <p class="me-stat__label">Publicados</p>
-      <p class="me-stat__value">57</p>
-      <p class="me-stat__meta">+11 frente al mes anterior</p>
+      <p class="me-stat__value" data-events-total>0</p>
+      <p class="me-stat__meta">Eventos registrados actualmente</p>
     </article>
 
     <article class="me-stat">
-      <p class="me-stat__label">Borradores</p>
-      <p class="me-stat__value">9</p>
-      <p class="me-stat__meta">Pendientes de revisión</p>
+      <p class="me-stat__label">Precio medio</p>
+      <p class="me-stat__value" data-events-price-average>0 €</p>
+      <p class="me-stat__meta">Promedio en el catálogo</p>
     </article>
 
     <article class="me-stat">
-      <p class="me-stat__label">Cancelados</p>
-      <p class="me-stat__value">2</p>
-      <p class="me-stat__meta">Requieren comunicación al público</p>
+      <p class="me-stat__label">Aforo total</p>
+      <p class="me-stat__value" data-events-capacity-total>0</p>
+      <p class="me-stat__meta">Suma de capacidades máximas</p>
     </article>
   </section>
 
@@ -54,80 +54,100 @@ require_once __DIR__ . "/../../layout/header.php";
       <header class="me-panel__header">
         <div>
           <h2 class="me-panel__title">Agenda próxima</h2>
-          <p class="me-panel__subtitle">Vista editorial de próximos eventos</p>
+          <p class="me-panel__subtitle" data-events-hint>Cargando eventos...</p>
         </div>
-        <button class="me-btn" type="button">Ver calendario</button>
+        <button class="me-btn" type="button" data-events-reload>Recargar</button>
       </header>
 
-      <div class="me-cards">
+      <div class="me-cards" data-events-list>
         <article class="me-event-card">
-          <p class="me-event-card__date">14 MAY · 20:30</p>
-          <h3 class="me-event-card__title">Noche Electrónica Distrito Norte</h3>
-          <p class="me-event-card__meta">Sala Prisma · Madrid</p>
-          <p class="me-event-card__status me-event-card__status--live">Publicado</p>
-        </article>
-
-        <article class="me-event-card">
-          <p class="me-event-card__date">18 MAY · 19:00</p>
-          <h3 class="me-event-card__title">Encuentro de Productores Locales</h3>
-          <p class="me-event-card__meta">Centro Cívico Sur · Sevilla</p>
-          <p class="me-event-card__status me-event-card__status--draft">Borrador</p>
-        </article>
-
-        <article class="me-event-card">
-          <p class="me-event-card__date">21 MAY · 22:00</p>
-          <h3 class="me-event-card__title">Festival Open Air Sonora</h3>
-          <p class="me-event-card__meta">Recinto Exterior · Valencia</p>
-          <p class="me-event-card__status me-event-card__status--full">Aforo alto</p>
+          <p class="me-event-card__date">—</p>
+          <h3 class="me-event-card__title">Cargando...</h3>
+          <p class="me-event-card__meta">—</p>
+          <div class="me-event-card__actions">
+            <button class="me-row-btn" type="button" disabled>Editar</button>
+            <button class="me-row-btn me-row-btn--danger" type="button" disabled>Eliminar</button>
+          </div>
         </article>
       </div>
     </article>
 
     <aside class="me-sidebar">
       <article class="me-panel">
-        <h2 class="me-panel__title">Filtros de agenda</h2>
-        <form class="me-form" aria-label="Filtros de eventos">
+        <h2 class="me-panel__title" data-event-form-title>Registrar evento</h2>
+        <form class="me-form" data-event-crud-form aria-label="Formulario de eventos">
+          <input type="hidden" name="id" />
+
           <label class="me-field">
-            <span>Buscar por título</span>
-            <input type="text" placeholder="Título del evento..." />
+            <span>Nombre</span>
+            <input type="text" name="name" placeholder="Título del evento" required />
           </label>
 
           <label class="me-field">
-            <span>Estado</span>
-            <select>
-              <option>Todos</option>
-              <option>Publicados</option>
-              <option>Borradores</option>
-              <option>Cancelados</option>
+            <span>Empresa</span>
+            <select name="id_company" data-event-company-select required>
+              <option value="">Selecciona empresa</option>
             </select>
           </label>
 
           <label class="me-field">
-            <span>Mes</span>
-            <select>
-              <option>Mayo</option>
-              <option>Junio</option>
-              <option>Julio</option>
+            <span>Tipo de evento</span>
+            <select name="id_event_type" data-event-type-select required>
+              <option value="">Selecciona tipo</option>
             </select>
+          </label>
+
+          <label class="me-field">
+            <span>Lugar</span>
+            <input type="text" name="place" placeholder="Recinto, sala..." required />
+          </label>
+
+          <label class="me-field">
+            <span>Fecha</span>
+            <input type="date" name="date" required />
+          </label>
+
+          <label class="me-field">
+            <span>Hora</span>
+            <input type="time" name="hour" required />
+          </label>
+
+          <label class="me-field">
+            <span>Precio (€)</span>
+            <input type="number" name="price" min="0" step="0.01" placeholder="0.00" required />
+          </label>
+
+          <label class="me-field">
+            <span>Aforo máximo</span>
+            <input type="number" name="maximun_capacity" min="1" placeholder="100" required />
+          </label>
+
+          <label class="me-field">
+            <span>Ruta cartel (opcional)</span>
+            <input type="text" name="poster_image" placeholder="carteles/mi-evento.jpg" />
           </label>
 
           <div class="me-form__actions">
-            <button class="me-btn me-btn--primary" type="button">Aplicar</button>
-            <button class="me-btn" type="button">Restablecer</button>
+            <button class="me-btn me-btn--primary" type="submit" data-event-submit-btn>Guardar</button>
+            <button class="me-btn" type="button" data-event-form-reset>Limpiar</button>
+            <button class="me-btn" type="button" data-event-form-cancel hidden>Cancelar edición</button>
           </div>
+
+          <p class="me-form__status" data-event-form-status></p>
         </form>
       </article>
 
       <article class="me-panel">
-        <h2 class="me-panel__title">Checklist editorial</h2>
+        <h2 class="me-panel__title">Ayuda rápida</h2>
         <ul class="me-checklist">
-          <li>Completar imagen de portada para todos los borradores.</li>
-          <li>Revisar aforo y precios antes de publicar.</li>
-          <li>Confirmar hora de apertura y cierre de puertas.</li>
+          <li>Crear: completa el formulario y pulsa Guardar.</li>
+          <li>Editar: pulsa Editar en una tarjeta para cargar datos.</li>
+          <li>Eliminar: usa Eliminar en la tarjeta del evento.</li>
         </ul>
       </article>
     </aside>
   </section>
 </section>
 
+<script type="module" src="/assets/js/admin/events/manage_events.js"></script>
 <?php require_once __DIR__ . "/../../layout/footer.php"; ?>

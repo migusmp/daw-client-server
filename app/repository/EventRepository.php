@@ -31,6 +31,51 @@ class EventRepository extends BaseRepository
         return array_map(fn($r) => $this->fromRow($r), $rows);
     }
 
+    public function getAllWithMeta(): array
+    {
+        $this->db->query("
+            SELECT
+                e.*,
+                em.nombre AS company_name,
+                te.nombre AS event_type_name
+            FROM {$this->table} e
+            INNER JOIN empresa em ON em.id_empresa = e.id_empresa
+            INNER JOIN tipo_evento te ON te.id_tipo = e.id_tipo
+            ORDER BY e.fecha DESC, e.hora DESC, e.id_evento DESC
+        ");
+        $this->db->execute();
+        $rows = $this->db->results();
+
+        return array_map(function ($row) {
+            return [
+                "id" => (int)$row["id_evento"],
+                "name" => $row["nombre"],
+                "id_event_type" => (int)$row["id_tipo"],
+                "event_type_name" => $row["event_type_name"],
+                "id_company" => (int)$row["id_empresa"],
+                "company_name" => $row["company_name"],
+                "place" => $row["lugar"],
+                "date" => $row["fecha"],
+                "hour" => $row["hora"],
+                "price" => (float)$row["precio"],
+                "maximun_capacity" => (int)$row["aforo_maximo"],
+                "poster_image" => $row["imagen_cartel"],
+            ];
+        }, $rows);
+    }
+
+    public function getEventTypes(): array
+    {
+        $this->db->query("
+            SELECT id_tipo AS id, nombre
+            FROM tipo_evento
+            ORDER BY nombre ASC
+        ");
+        $this->db->execute();
+
+        return $this->db->results();
+    }
+
     public function findById(int $id): ?Event
     {
         $this->db->query("

@@ -22,12 +22,43 @@ class CompanyService
         }
     }
 
-    public function getCompanyById(int $id): ?Company {
+    public function getCompanyById(int $id): ?Company
+    {
         try {
             return $this->companyRepository->findById($id);
         } catch (PDOException $e) {
             error_log($e->getMessage());
             return null;
+        }
+    }
+
+    public function saveCompany(Company $company): bool
+    {
+        try {
+            return $this->companyRepository->save($company);
+        } catch (PDOException $e) {
+            error_log($e->getMessage());
+            return false;
+        }
+    }
+
+    public function updateCompany(Company $company): bool
+    {
+        try {
+            return $this->companyRepository->update($company);
+        } catch (PDOException $e) {
+            error_log($e->getMessage());
+            return false;
+        }
+    }
+
+    public function deleteCompanyById(int $id): bool
+    {
+        try {
+            return $this->companyRepository->delete($id);
+        } catch (PDOException $e) {
+            error_log($e->getMessage());
+            return false;
         }
     }
 }

@@ -27,10 +27,20 @@ $router->get("/admin/manage-companies", [CompanyController::class, 'manageCompan
 
 // COMPANIES API
 $router->get("/api/companies", [CompanyController::class, 'getAll']);
+$router->post("/api/companies", [CompanyController::class, 'create']);
+$router->put("/api/companies", [CompanyController::class, 'update']);
+$router->delete("/api/companies", [CompanyController::class, 'delete']);
 $router->get("/api/companies/show", [CompanyController::class, "getOne"]);
 $router->get("/api/company/events", [CompanyController::class, 'getEventsByCompany']);
 
 // EVENTS PAGES
 $router->get("/admin/manage-events", [EventController::class, 'manageEvent']);
+
+// EVENTS API
+$router->get("/api/events", [EventController::class, 'getAll']);
+$router->post("/api/events", [EventController::class, 'create']);
+$router->put("/api/events", [EventController::class, 'update']);
+$router->delete("/api/events", [EventController::class, 'delete']);
+$router->get("/api/event-types", [EventController::class, 'getEventTypes']);
 
 $router->resolve();

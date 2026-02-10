@@ -14,7 +14,7 @@ require_once __DIR__ . "/../../layout/header.php";
         Panel visual para revisar empresas, validar datos de contacto y priorizar acciones administrativas.
       </p>
       <div class="manage-companies__hero-actions">
-        <button class="mc-btn mc-btn--primary" type="button">Nueva empresa</button>
+        <button class="mc-btn mc-btn--primary" type="button" data-company-new>Nueva empresa</button>
         <a class="mc-btn" href="/admin">Volver al panel</a>
       </div>
     </div>
@@ -32,20 +32,20 @@ require_once __DIR__ . "/../../layout/header.php";
   <section class="manage-companies__stats" aria-label="Métricas rápidas">
     <article class="mc-stat">
       <p class="mc-stat__label">Empresas activas</p>
-      <p class="mc-stat__value">128</p>
-      <p class="mc-stat__meta">+8 en los últimos 30 días</p>
+      <p class="mc-stat__value" data-company-total>0</p>
+      <p class="mc-stat__meta">Empresas registradas actualmente</p>
     </article>
 
     <article class="mc-stat">
-      <p class="mc-stat__label">Pendientes</p>
-      <p class="mc-stat__value">14</p>
-      <p class="mc-stat__meta">Requieren validación de datos</p>
+      <p class="mc-stat__label">Con contacto completo</p>
+      <p class="mc-stat__value" data-company-complete>0</p>
+      <p class="mc-stat__meta">Email y teléfono disponibles</p>
     </article>
 
     <article class="mc-stat">
-      <p class="mc-stat__label">Eventos vinculados</p>
-      <p class="mc-stat__value">346</p>
-      <p class="mc-stat__meta">12 publicados esta semana</p>
+      <p class="mc-stat__label">Ciudades distintas</p>
+      <p class="mc-stat__value" data-company-cities>0</p>
+      <p class="mc-stat__meta">Cobertura territorial actual</p>
     </article>
   </section>
 
@@ -54,9 +54,9 @@ require_once __DIR__ . "/../../layout/header.php";
       <header class="mc-panel__header">
         <div>
           <h2 class="mc-panel__title">Listado de empresas</h2>
-          <p class="mc-panel__subtitle">Vista previa de registros más recientes</p>
+          <p class="mc-panel__subtitle" data-companies-hint>Cargando empresas...</p>
         </div>
-        <button class="mc-btn" type="button">Exportar</button>
+        <button class="mc-btn" type="button" data-companies-reload>Recargar</button>
       </header>
 
       <div class="mc-table" role="table" aria-label="Tabla de empresas">
@@ -64,84 +64,75 @@ require_once __DIR__ . "/../../layout/header.php";
           <span>Empresa</span>
           <span>Ciudad</span>
           <span>Contacto</span>
-          <span>Estado</span>
+          <span>Acciones</span>
         </div>
 
-        <div class="mc-table__row" role="row">
-          <span>Nova Audio Labs</span>
-          <span>Madrid</span>
-          <span>hola@novalabs.es</span>
-          <span class="mc-badge mc-badge--ok">Activa</span>
-        </div>
-
-        <div class="mc-table__row" role="row">
-          <span>Ritmo Factory</span>
-          <span>Valencia</span>
-          <span>contacto@ritmofactory.com</span>
-          <span class="mc-badge mc-badge--warn">Pendiente</span>
-        </div>
-
-        <div class="mc-table__row" role="row">
-          <span>Pulse Community</span>
-          <span>Bilbao</span>
-          <span>equipo@pulse.org</span>
-          <span class="mc-badge mc-badge--ok">Activa</span>
-        </div>
-
-        <div class="mc-table__row" role="row">
-          <span>Sónica Distrito</span>
-          <span>Sevilla</span>
-          <span>gestion@sonicadistrito.es</span>
-          <span class="mc-badge mc-badge--block">Incompleta</span>
+        <div data-companies-rows>
+          <div class="mc-table__row" role="row">
+            <span>—</span>
+            <span>—</span>
+            <span>—</span>
+            <span class="mc-table__actions-cell">
+              <button class="mc-row-btn" type="button" disabled>Editar</button>
+              <button class="mc-row-btn mc-row-btn--danger" type="button" disabled>Eliminar</button>
+            </span>
+          </div>
         </div>
       </div>
     </article>
 
     <aside class="mc-sidebar">
       <article class="mc-panel">
-        <h2 class="mc-panel__title">Filtros visuales</h2>
-        <form class="mc-form" aria-label="Filtros de empresas">
+        <h2 class="mc-panel__title" data-company-form-title>Registrar empresa</h2>
+        <form class="mc-form" data-company-crud-form aria-label="Formulario de empresa">
+          <input type="hidden" name="id" />
+
           <label class="mc-field">
-            <span>Nombre o ciudad</span>
-            <input type="text" placeholder="Buscar empresa..." />
+            <span>Nombre</span>
+            <input type="text" name="name" placeholder="Nombre de la empresa" required />
           </label>
 
           <label class="mc-field">
-            <span>Estado</span>
-            <select>
-              <option>Todas</option>
-              <option>Activas</option>
-              <option>Pendientes</option>
-              <option>Incompletas</option>
-            </select>
+            <span>Ciudad</span>
+            <input type="text" name="city" placeholder="Ciudad" required />
           </label>
 
           <label class="mc-field">
-            <span>Orden</span>
-            <select>
-              <option>Más recientes</option>
-              <option>Nombre (A-Z)</option>
-              <option>Ciudad</option>
-            </select>
+            <span>Año de creación</span>
+            <input type="number" name="creation_year" placeholder="2005" min="1800" max="2100" required />
+          </label>
+
+          <label class="mc-field">
+            <span>Correo de contacto</span>
+            <input type="email" name="contact_email" placeholder="correo@empresa.com" required />
+          </label>
+
+          <label class="mc-field">
+            <span>Teléfono de contacto</span>
+            <input type="text" name="contact_number" placeholder="+34 600 000 000" required />
           </label>
 
           <div class="mc-form__actions">
-            <button class="mc-btn mc-btn--primary" type="button">Aplicar</button>
-            <button class="mc-btn" type="button">Limpiar</button>
+            <button class="mc-btn mc-btn--primary" type="submit" data-company-submit-btn>Guardar</button>
+            <button class="mc-btn" type="button" data-company-form-reset>Limpiar</button>
+            <button class="mc-btn" type="button" data-company-form-cancel hidden>Cancelar edición</button>
           </div>
+
+          <p class="mc-form__status" data-company-form-status></p>
         </form>
       </article>
 
       <article class="mc-panel">
-        <h2 class="mc-panel__title">Acciones rápidas</h2>
+        <h2 class="mc-panel__title">Ayuda rápida</h2>
         <ul class="mc-quick-list">
-          <li>Revisar empresas sin email de contacto.</li>
-          <li>Actualizar empresas sin ciudad definida.</li>
-          <li>Detectar perfiles sin eventos vinculados.</li>
+          <li>Crear: rellena el formulario y pulsa Guardar.</li>
+          <li>Editar: pulsa Editar en una fila para cargar datos.</li>
+          <li>Eliminar: usa Eliminar en la fila de la empresa.</li>
         </ul>
       </article>
     </aside>
   </section>
 </section>
 
+<script type="module" src="/assets/js/admin/companies/manage_companies.js"></script>
 <?php require_once __DIR__ . "/../../layout/footer.php"; ?>
