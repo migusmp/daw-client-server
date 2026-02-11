@@ -14,7 +14,6 @@ require_once __DIR__ . "/../../layout/header.php";
         Panel visual para revisar empresas, validar datos de contacto y priorizar acciones administrativas.
       </p>
       <div class="manage-companies__hero-actions">
-        <button class="mc-btn mc-btn--primary" type="button" data-company-new>Nueva empresa</button>
         <a class="mc-btn" href="/admin">Volver al panel</a>
       </div>
     </div>
@@ -42,11 +41,6 @@ require_once __DIR__ . "/../../layout/header.php";
       <p class="mc-stat__meta">Email y teléfono disponibles</p>
     </article>
 
-    <article class="mc-stat">
-      <p class="mc-stat__label">Ciudades distintas</p>
-      <p class="mc-stat__value" data-company-cities>0</p>
-      <p class="mc-stat__meta">Cobertura territorial actual</p>
-    </article>
   </section>
 
   <section class="manage-companies__content" aria-label="Contenido principal">
@@ -98,8 +92,8 @@ require_once __DIR__ . "/../../layout/header.php";
             <span>—</span>
             <span>—</span>
             <span class="mc-table__actions-cell">
-              <button class="mc-row-btn" type="button" disabled>Editar</button>
-              <button class="mc-row-btn mc-row-btn--danger" type="button" disabled>Eliminar</button>
+              <button class="mc-row-btn" type="button" id="edit-company-btn" disabled>Editar</button>
+              <button class="mc-row-btn mc-row-btn--danger" type="button" id="delete-company-btn" disabled>Eliminar</button>
             </span>
           </div>
         </div>

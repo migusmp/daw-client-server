@@ -31,9 +31,35 @@ export const redirectTo = (path, delayMs = 0) => {
   }
 };
 
+export const fetchJson = async (url, options = {}) => {
+  const res = await fetch(url, options);
+  let payload = null;
+
+  try {
+    payload = await res.json();
+  } catch {
+    payload = null;
+  }
+
+  if (!res.ok) {
+    const message = payload?.message || `HTTP ${res.status}`;
+    throw new Error(message);
+  }
+
+  return payload ?? {};
+};
+
 export const escapeText = (value) => {
   if (value === null || value === undefined) return "";
   return String(value);
+};
+
+export const normalizeText = (value) => String(value ?? "").trim().toLowerCase();
+
+export const toText = (value, fallback = "—") => {
+  if (value === null || value === undefined) return fallback;
+  const text = String(value).trim();
+  return text === "" ? fallback : text;
 };
 
 export const $ = (sel) => document.querySelector(sel);

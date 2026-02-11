@@ -1,138 +1,88 @@
-const selectors = {
-  form: "[data-company-crud-form]",
-  rows: "[data-companies-rows]",
-  hint: "[data-companies-hint]",
-  status: "[data-company-form-status]",
-  title: "[data-company-form-title]",
-  submitBtn: "[data-company-submit-btn]",
-  cancelBtn: "[data-company-form-cancel]",
-  resetBtn: "[data-company-form-reset]",
-  reloadBtn: "[data-companies-reload]",
-  newBtn: "[data-company-new]",
-  total: "[data-company-total]",
-  complete: "[data-company-complete]",
-  cities: "[data-company-cities]",
-  filterQuery: "[data-company-filter-query]",
-  filterCity: "[data-company-filter-city]",
-  filterContact: "[data-company-filter-contact]",
-  filterReset: "[data-company-filters-reset]",
-  deleteModal: "[data-company-delete-modal]",
-  deleteMessage: "[data-company-delete-message]",
-  deleteConfirm: "[data-company-delete-confirm]",
-  deleteCancel: "[data-company-delete-cancel]",
-};
+import { $, fetchJson, normalizeText, toText } from "../../utils/utils.js";
 
-const state = {
-  companies: [],
-  editingId: 0,
-  pendingDeleteId: 0,
-  filters: {
-    query: "",
-    city: "",
-    contact: "all",
-  },
-};
+const form = $("[data-company-crud-form]");
+const rowsBox = $("[data-companies-rows]");
+const hint = $("[data-companies-hint]");
+const statusBox = $("[data-company-form-status]");
+const formTitle = $("[data-company-form-title]");
+const submitBtn = $("[data-company-submit-btn]");
+const cancelBtn = $("[data-company-form-cancel]");
+const resetBtn = $("[data-company-form-reset]");
+const reloadBtn = $("[data-companies-reload]");
+const totalEl = $("[data-company-total]");
+const completeEl = $("[data-company-complete]");
+const filterQueryInput = $("[data-company-filter-query]");
+const filterCitySelect = $("[data-company-filter-city]");
+const filterContactSelect = $("[data-company-filter-contact]");
+const filterResetBtn = $("[data-company-filters-reset]");
+const deleteModal = $("[data-company-delete-modal]");
+const deleteMessage = $("[data-company-delete-message]");
+const deleteConfirmBtn = $("[data-company-delete-confirm]");
+const deleteCancelButtons = document.querySelectorAll("[data-company-delete-cancel]");
 
-const $ = (sel) => document.querySelector(sel);
+let companies = [];
+let deletingCompanyId = 0;
 
-const form = $(selectors.form);
-const rowsBox = $(selectors.rows);
-const hint = $(selectors.hint);
-const statusBox = $(selectors.status);
-const formTitle = $(selectors.title);
-const submitBtn = $(selectors.submitBtn);
-const cancelBtn = $(selectors.cancelBtn);
-const resetBtn = $(selectors.resetBtn);
-const reloadBtn = $(selectors.reloadBtn);
-const newBtn = $(selectors.newBtn);
-const totalEl = $(selectors.total);
-const completeEl = $(selectors.complete);
-const citiesEl = $(selectors.cities);
-const filterQueryInput = $(selectors.filterQuery);
-const filterCitySelect = $(selectors.filterCity);
-const filterContactSelect = $(selectors.filterContact);
-const filterResetBtn = $(selectors.filterReset);
-const deleteModal = $(selectors.deleteModal);
-const deleteMessage = $(selectors.deleteMessage);
-const deleteConfirmBtn = $(selectors.deleteConfirm);
-const deleteCancelButtons = document.querySelectorAll(selectors.deleteCancel);
-
-const setStatus = (message = "", type = "") => {
+function setStatus(message = "", type = "") {
   if (!statusBox) return;
+
   statusBox.textContent = message;
   statusBox.className = "mc-form__status";
-  if (type) statusBox.classList.add(`is-${type}`);
-};
 
-const setHint = (message) => {
+  if (type) {
+    statusBox.classList.add(`is-${type}`);
+  }
+}
+
+function setHint(message = "") {
   if (!hint) return;
   hint.textContent = message;
-};
+}
 
-const toText = (value, fallback = "—") => {
-  if (value === null || value === undefined) return fallback;
-  const text = String(value).trim();
-  return text === "" ? fallback : text;
-};
+function getFormField(name) {
+  if (!form) return null;
 
-const normalizeText = (value) => String(value ?? "").trim().toLowerCase();
+  const field = form.elements.namedItem(name);
+  if (!field) return null;
 
-const hasCompleteContact = (company) => {
+  if (typeof RadioNodeList !== "undefined" && field instanceof RadioNodeList) {
+    return null;
+  }
+
+  return field;
+}
+
+function hasCompleteContact(company) {
   const hasEmail = normalizeText(company.email_person_in_charge) !== "";
   const hasPhone = normalizeText(company.number_person_in_charge) !== "";
   return hasEmail && hasPhone;
-};
+}
 
-const fetchJson = async (url, options = {}) => {
-  const res = await fetch(url, options);
-  let payload = null;
-
-  try {
-    payload = await res.json();
-  } catch {
-    payload = null;
-  }
-
-  if (!res.ok) {
-    const message = payload?.message || `HTTP ${res.status}`;
-    throw new Error(message);
-  }
-
-  return payload ?? {};
-};
-
-const updateStats = (companies) => {
-  const total = companies.length;
-  const complete = companies.filter((company) => hasCompleteContact(company)).length;
-
-  const uniqueCities = new Set(
-    companies
-      .map((company) => toText(company.city, ""))
-      .filter((city) => city !== "")
-      .map((city) => city.toLowerCase()),
-  ).size;
+function updateStats(list) {
+  const total = list.length;
+  const complete = list.filter((company) => hasCompleteContact(company)).length;
 
   if (totalEl) totalEl.textContent = String(total);
   if (completeEl) completeEl.textContent = String(complete);
-  if (citiesEl) citiesEl.textContent = String(uniqueCities);
-};
+}
 
-const populateCityFilter = (companies) => {
+function fillCityFilter() {
   if (!filterCitySelect) return;
 
-  const previous = normalizeText(filterCitySelect.value);
-  const cityMap = new Map();
+  const currentValue = normalizeText(filterCitySelect.value);
+  const citiesMap = new Map();
 
   companies.forEach((company) => {
-    const rawCity = String(company.city ?? "").trim();
-    if (!rawCity) return;
-    const key = normalizeText(rawCity);
-    if (!cityMap.has(key)) {
-      cityMap.set(key, rawCity);
+    const cityLabel = toText(company.city, "").trim();
+    if (!cityLabel) return;
+
+    const cityKey = normalizeText(cityLabel);
+    if (!citiesMap.has(cityKey)) {
+      citiesMap.set(cityKey, cityLabel);
     }
   });
 
-  const orderedCities = [...cityMap.entries()].sort((a, b) =>
+  const sortedCities = [...citiesMap.entries()].sort((a, b) =>
     a[1].localeCompare(b[1], "es", { sensitivity: "base" }),
   );
 
@@ -143,19 +93,66 @@ const populateCityFilter = (companies) => {
   allOption.textContent = "Todas";
   filterCitySelect.append(allOption);
 
-  orderedCities.forEach(([key, label]) => {
+  sortedCities.forEach(([key, label]) => {
     const option = document.createElement("option");
     option.value = key;
     option.textContent = label;
     filterCitySelect.append(option);
   });
 
-  if (previous && cityMap.has(previous)) {
-    filterCitySelect.value = previous;
+  if (currentValue && citiesMap.has(currentValue)) {
+    filterCitySelect.value = currentValue;
   }
-};
+}
 
-const buildRow = (company) => {
+function readFilters() {
+  const contactValue = String(filterContactSelect?.value || "all");
+
+  return {
+    query: normalizeText(filterQueryInput?.value || ""),
+    city: normalizeText(filterCitySelect?.value || ""),
+    contact: ["all", "complete", "incomplete"].includes(contactValue)
+      ? contactValue
+      : "all",
+  };
+}
+
+function companyMatchesFilters(company, filters) {
+  if (filters.city && normalizeText(company.city) !== filters.city) {
+    return false;
+  }
+
+  if (filters.contact === "complete" && !hasCompleteContact(company)) {
+    return false;
+  }
+
+  if (filters.contact === "incomplete" && hasCompleteContact(company)) {
+    return false;
+  }
+
+  if (!filters.query) {
+    return true;
+  }
+
+  const searchable = [
+    company.name,
+    company.city,
+    company.creation_year,
+    company.email_person_in_charge,
+    company.number_person_in_charge,
+  ]
+    .map((value) => normalizeText(value))
+    .join(" ");
+
+  return searchable.includes(filters.query);
+}
+
+function getFilteredCompanies() {
+  const filters = readFilters();
+  return companies.filter((company) => companyMatchesFilters(company, filters));
+}
+
+function buildCompanyRow(company) {
   const row = document.createElement("div");
   row.className = "mc-table__row";
   row.setAttribute("role", "row");
@@ -188,192 +185,139 @@ const buildRow = (company) => {
 
   actions.append(editBtn, deleteBtn);
   row.append(name, city, contact, actions);
-  return row;
-};
 
-const renderCompanies = (companies) => {
+  return row;
+}
+
+function renderCompanies(list) {
   if (!rowsBox) return;
+
   rowsBox.innerHTML = "";
 
-  if (!companies.length) {
+  if (!list.length) {
     const row = document.createElement("div");
     row.className = "mc-table__row";
     row.setAttribute("role", "row");
 
     const text = document.createElement("span");
     text.className = "mc-table__empty";
-    text.textContent = "No hay empresas registradas todavía.";
     text.style.gridColumn = "1 / -1";
-    row.append(text);
+    text.textContent = "No hay empresas registradas todavía.";
 
+    row.append(text);
     rowsBox.append(row);
     return;
   }
 
-  companies.forEach((company) => rowsBox.append(buildRow(company)));
-};
-
-const syncFiltersFromInputs = () => {
-  state.filters.query = normalizeText(filterQueryInput?.value ?? "");
-  state.filters.city = normalizeText(filterCitySelect?.value ?? "");
-
-  const contactFilter = String(filterContactSelect?.value || "all");
-  state.filters.contact = ["all", "complete", "incomplete"].includes(contactFilter) ? contactFilter : "all";
-};
-
-const getFilteredCompanies = () => {
-  const { query, city, contact } = state.filters;
-
-  return state.companies.filter((company) => {
-    if (city && normalizeText(company.city) !== city) {
-      return false;
-    }
-
-    if (contact === "complete" && !hasCompleteContact(company)) {
-      return false;
-    }
-
-    if (contact === "incomplete" && hasCompleteContact(company)) {
-      return false;
-    }
-
-    if (!query) {
-      return true;
-    }
-
-    const searchable = [
-      company.name,
-      company.city,
-      company.creation_year,
-      company.email_person_in_charge,
-      company.number_person_in_charge,
-    ]
-      .map((value) => normalizeText(value))
-      .join(" ");
-
-    return searchable.includes(query);
+  list.forEach((company) => {
+    rowsBox.append(buildCompanyRow(company));
   });
-};
+}
 
-const applyCompanyFilters = () => {
-  syncFiltersFromInputs();
+function refreshView() {
+  const filteredCompanies = getFilteredCompanies();
 
-  const filtered = getFilteredCompanies();
-  const total = state.companies.length;
+  renderCompanies(filteredCompanies);
+  updateStats(filteredCompanies);
 
-  renderCompanies(filtered);
-  updateStats(filtered);
-
-  if (!total) {
+  if (!companies.length) {
     setHint("No hay empresas registradas.");
     return;
   }
 
-  if (filtered.length === total) {
-    setHint(`Mostrando ${filtered.length} empresas`);
+  if (filteredCompanies.length === companies.length) {
+    setHint(`Mostrando ${filteredCompanies.length} empresas`);
     return;
   }
 
-  setHint(`Mostrando ${filtered.length} de ${total} empresas`);
-};
+  setHint(`Mostrando ${filteredCompanies.length} de ${companies.length} empresas`);
+}
 
-const setDeleteModalOpen = (open) => {
+function setDeleteModalOpen(open) {
   if (!deleteModal) return;
 
   deleteModal.hidden = !open;
   deleteModal.classList.toggle("is-open", open);
   document.body.classList.toggle("admin-modal-open", open);
-};
+}
 
-const openDeleteModal = (company) => {
-  state.pendingDeleteId = Number(company.id || 0);
+function openDeleteModal(company) {
+  deletingCompanyId = Number(company.id || 0);
 
   if (deleteMessage) {
     deleteMessage.textContent = `Vas a eliminar la empresa "${toText(company.name, "Sin nombre")}". Esta acción no se puede deshacer.`;
   }
 
   setDeleteModalOpen(true);
-};
+}
 
-const closeDeleteModal = () => {
-  state.pendingDeleteId = 0;
+function closeDeleteModal() {
+  deletingCompanyId = 0;
   setDeleteModalOpen(false);
-};
+}
 
-const confirmDeleteCompany = async () => {
-  const id = Number(state.pendingDeleteId || 0);
-  if (!id) {
-    closeDeleteModal();
-    return;
-  }
-
-  closeDeleteModal();
-  await deleteCompany(id);
-};
-
-const resetForm = () => {
+function resetForm(clearStatus = true) {
   if (!form) return;
 
   form.reset();
-  const idInput = form.elements.namedItem("id");
-  if (idInput && !(typeof RadioNodeList !== "undefined" && idInput instanceof RadioNodeList)) {
-    idInput.value = "";
+
+  const idField = getFormField("id");
+  if (idField) {
+    idField.value = "";
   }
 
-  state.editingId = 0;
   if (formTitle) formTitle.textContent = "Registrar empresa";
   if (submitBtn) submitBtn.textContent = "Guardar";
   if (cancelBtn) cancelBtn.hidden = true;
-  setStatus("");
-};
 
-const fillFormForEdit = (company) => {
-  if (!form) return;
+  if (clearStatus) {
+    setStatus("");
+  }
+}
 
-  state.editingId = Number(company.id);
+function loadCompanyInForm(company) {
+  const idField = getFormField("id");
+  const nameField = getFormField("name");
+  const cityField = getFormField("city");
+  const yearField = getFormField("creation_year");
+  const emailField = getFormField("contact_email");
+  const phoneField = getFormField("contact_number");
+
+  if (idField) idField.value = String(company.id || "");
+  if (nameField) nameField.value = toText(company.name, "");
+  if (cityField) cityField.value = toText(company.city, "");
+  if (yearField) yearField.value = toText(company.creation_year, "");
+  if (emailField) emailField.value = toText(company.email_person_in_charge, "");
+  if (phoneField) phoneField.value = toText(company.number_person_in_charge, "");
+
   if (formTitle) formTitle.textContent = "Editar empresa";
   if (submitBtn) submitBtn.textContent = "Actualizar";
   if (cancelBtn) cancelBtn.hidden = false;
   setStatus("");
+}
 
-  const entries = {
-    id: String(company.id),
-    name: toText(company.name, ""),
-    city: toText(company.city, ""),
-    creation_year: toText(company.creation_year, ""),
-    contact_email: toText(company.email_person_in_charge, ""),
-    contact_number: toText(company.number_person_in_charge, ""),
-  };
-
-  Object.entries(entries).forEach(([name, value]) => {
-    const field = form.elements.namedItem(name);
-    if (!field) return;
-    if (typeof RadioNodeList !== "undefined" && field instanceof RadioNodeList) return;
-    field.value = value;
-  });
-};
-
-const loadCompanies = async () => {
+async function loadCompanies() {
   setHint("Cargando empresas...");
-  try {
-    const payload = await fetchJson("/api/companies", { method: "GET" });
-    const companies = Array.isArray(payload?.data) ? payload.data : [];
-    state.companies = companies;
 
-    populateCityFilter(companies);
-    applyCompanyFilters();
+  try {
+    const response = await fetchJson("/api/companies", { method: "GET" });
+    companies = Array.isArray(response?.data) ? response.data : [];
+
+    fillCityFilter();
+    refreshView();
   } catch (error) {
-    state.companies = [];
+    companies = [];
+    fillCityFilter();
     renderCompanies([]);
     updateStats([]);
-    populateCityFilter([]);
+
     setHint("No se pudieron cargar las empresas.");
     setStatus(error.message || "Error cargando empresas", "error");
   }
-};
+}
 
-const submitForm = async (e) => {
-  e.preventDefault();
+async function saveCompany(event) {
+  event.preventDefault();
   if (!form) return;
 
   const data = new FormData(form);
@@ -397,87 +341,93 @@ const submitForm = async (e) => {
       body: JSON.stringify(payload),
     });
 
-    setStatus(isEditing ? "Empresa actualizada correctamente." : "Empresa registrada correctamente.", "success");
-    resetForm();
+    resetForm(false);
+    setStatus(
+      isEditing
+        ? "Empresa actualizada correctamente."
+        : "Empresa registrada correctamente.",
+      "success",
+    );
+
     await loadCompanies();
   } catch (error) {
     setStatus(error.message || "No se pudo guardar la empresa.", "error");
   }
-};
+}
 
-const deleteCompany = async (id) => {
+async function deleteCompany(id) {
   try {
     setStatus("Eliminando empresa...");
+
     await fetchJson(`/api/companies?id=${encodeURIComponent(id)}`, {
       method: "DELETE",
     });
+
+    resetForm(false);
     setStatus("Empresa eliminada correctamente.", "success");
-    resetForm();
+
     await loadCompanies();
   } catch (error) {
     setStatus(error.message || "No se pudo eliminar la empresa.", "error");
   }
-};
+}
 
-const onTableClick = async (e) => {
-  const target = e.target instanceof Element ? e.target : null;
+async function confirmDeleteCompany() {
+  const id = Number(deletingCompanyId || 0);
+  closeDeleteModal();
+
+  if (!id) return;
+  await deleteCompany(id);
+}
+
+function onRowsClick(event) {
+  const target = event.target instanceof Element ? event.target : null;
   if (!target) return;
 
-  const btn = target.closest("button[data-action][data-id]");
-  if (!btn) return;
+  const button = target.closest("button[data-action][data-id]");
+  if (!button) return;
 
-  const id = Number(btn.dataset.id || 0);
-  if (!id) return;
+  const companyId = Number(button.dataset.id || 0);
+  if (!companyId) return;
 
-  const company = state.companies.find((item) => Number(item.id) === id);
+  const company = companies.find((item) => Number(item.id) === companyId);
   if (!company) return;
 
-  const action = btn.dataset.action;
-  if (action === "edit") {
-    fillFormForEdit(company);
+  if (button.dataset.action === "edit") {
+    loadCompanyInForm(company);
     return;
   }
 
-  if (action === "delete") {
+  if (button.dataset.action === "delete") {
     openDeleteModal(company);
   }
-};
+}
 
-if (form) form.addEventListener("submit", submitForm);
-if (rowsBox) rowsBox.addEventListener("click", onTableClick);
-if (cancelBtn) cancelBtn.addEventListener("click", resetForm);
-if (resetBtn) {
-  resetBtn.addEventListener("click", () => {
-    resetForm();
-  });
+function clearFilters() {
+  if (filterQueryInput) filterQueryInput.value = "";
+  if (filterCitySelect) filterCitySelect.value = "";
+  if (filterContactSelect) filterContactSelect.value = "all";
+  refreshView();
 }
+
+if (form) form.addEventListener("submit", saveCompany);
+if (rowsBox) rowsBox.addEventListener("click", onRowsClick);
+if (cancelBtn) cancelBtn.addEventListener("click", () => resetForm());
+if (resetBtn) resetBtn.addEventListener("click", () => resetForm());
 if (reloadBtn) reloadBtn.addEventListener("click", loadCompanies);
-if (newBtn) {
-  newBtn.addEventListener("click", () => {
-    resetForm();
-    const firstField = form?.elements?.namedItem("name");
-    if (firstField && !(typeof RadioNodeList !== "undefined" && firstField instanceof RadioNodeList)) {
-      firstField.focus();
-    }
-  });
-}
-if (filterQueryInput) filterQueryInput.addEventListener("input", applyCompanyFilters);
-if (filterCitySelect) filterCitySelect.addEventListener("change", applyCompanyFilters);
-if (filterContactSelect) filterContactSelect.addEventListener("change", applyCompanyFilters);
-if (filterResetBtn) {
-  filterResetBtn.addEventListener("click", () => {
-    if (filterQueryInput) filterQueryInput.value = "";
-    if (filterCitySelect) filterCitySelect.value = "";
-    if (filterContactSelect) filterContactSelect.value = "all";
-    applyCompanyFilters();
-  });
-}
+
+if (filterQueryInput) filterQueryInput.addEventListener("input", refreshView);
+if (filterCitySelect) filterCitySelect.addEventListener("change", refreshView);
+if (filterContactSelect) filterContactSelect.addEventListener("change", refreshView);
+if (filterResetBtn) filterResetBtn.addEventListener("click", clearFilters);
+
 if (deleteConfirmBtn) deleteConfirmBtn.addEventListener("click", confirmDeleteCompany);
 if (deleteCancelButtons.length) {
   deleteCancelButtons.forEach((button) => {
     button.addEventListener("click", closeDeleteModal);
   });
 }
+
 document.addEventListener("keydown", (event) => {
   if (event.key === "Escape" && deleteModal && !deleteModal.hidden) {
     closeDeleteModal();

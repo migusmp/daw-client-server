@@ -1,188 +1,215 @@
-const selectors = {
-  form: "[data-event-crud-form]",
-  list: "[data-events-list]",
-  hint: "[data-events-hint]",
-  status: "[data-event-form-status]",
-  title: "[data-event-form-title]",
-  submitBtn: "[data-event-submit-btn]",
-  cancelBtn: "[data-event-form-cancel]",
-  resetBtn: "[data-event-form-reset]",
-  reloadBtn: "[data-events-reload]",
-  newBtn: "[data-event-new]",
-  companySelect: "[data-event-company-select]",
-  eventTypeSelect: "[data-event-type-select]",
-  total: "[data-events-total]",
-  avgPrice: "[data-events-price-average]",
-  totalCapacity: "[data-events-capacity-total]",
-  filterQuery: "[data-event-filter-query]",
-  filterCompany: "[data-event-filter-company]",
-  filterType: "[data-event-filter-type]",
-  filterFrom: "[data-event-filter-from]",
-  filterTo: "[data-event-filter-to]",
-  filterReset: "[data-event-filters-reset]",
-  deleteModal: "[data-event-delete-modal]",
-  deleteMessage: "[data-event-delete-message]",
-  deleteConfirm: "[data-event-delete-confirm]",
-  deleteCancel: "[data-event-delete-cancel]",
-};
+import { $, fetchJson, normalizeText, toText } from "../../utils/utils.js";
 
-const state = {
-  events: [],
-  companies: [],
-  eventTypes: [],
-  editingId: 0,
-  pendingDeleteId: 0,
-  filters: {
-    query: "",
-    companyId: "",
-    eventTypeId: "",
-    dateFrom: "",
-    dateTo: "",
-  },
-};
+const form = $("[data-event-crud-form]");
+const listBox = $("[data-events-list]");
+const hint = $("[data-events-hint]");
+const statusBox = $("[data-event-form-status]");
+const formTitle = $("[data-event-form-title]");
+const submitBtn = $("[data-event-submit-btn]");
+const cancelBtn = $("[data-event-form-cancel]");
+const resetBtn = $("[data-event-form-reset]");
+const reloadBtn = $("[data-events-reload]");
+const newBtn = $("[data-event-new]");
 
-const $ = (sel) => document.querySelector(sel);
+const companySelect = $("[data-event-company-select]");
+const eventTypeSelect = $("[data-event-type-select]");
 
-const form = $(selectors.form);
-const listBox = $(selectors.list);
-const hint = $(selectors.hint);
-const statusBox = $(selectors.status);
-const formTitle = $(selectors.title);
-const submitBtn = $(selectors.submitBtn);
-const cancelBtn = $(selectors.cancelBtn);
-const resetBtn = $(selectors.resetBtn);
-const reloadBtn = $(selectors.reloadBtn);
-const newBtn = $(selectors.newBtn);
-const companySelect = $(selectors.companySelect);
-const eventTypeSelect = $(selectors.eventTypeSelect);
-const totalEl = $(selectors.total);
-const avgPriceEl = $(selectors.avgPrice);
-const totalCapacityEl = $(selectors.totalCapacity);
-const filterQueryInput = $(selectors.filterQuery);
-const filterCompanySelect = $(selectors.filterCompany);
-const filterTypeSelect = $(selectors.filterType);
-const filterFromInput = $(selectors.filterFrom);
-const filterToInput = $(selectors.filterTo);
-const filterResetBtn = $(selectors.filterReset);
-const deleteModal = $(selectors.deleteModal);
-const deleteMessage = $(selectors.deleteMessage);
-const deleteConfirmBtn = $(selectors.deleteConfirm);
-const deleteCancelButtons = document.querySelectorAll(selectors.deleteCancel);
+const totalEl = $("[data-events-total]");
+const avgPriceEl = $("[data-events-price-average]");
+const totalCapacityEl = $("[data-events-capacity-total]");
 
-const setStatus = (message = "", type = "") => {
+const filterQueryInput = $("[data-event-filter-query]");
+const filterCompanySelect = $("[data-event-filter-company]");
+const filterTypeSelect = $("[data-event-filter-type]");
+const filterFromInput = $("[data-event-filter-from]");
+const filterToInput = $("[data-event-filter-to]");
+const filterResetBtn = $("[data-event-filters-reset]");
+
+const deleteModal = $("[data-event-delete-modal]");
+const deleteMessage = $("[data-event-delete-message]");
+const deleteConfirmBtn = $("[data-event-delete-confirm]");
+const deleteCancelButtons = document.querySelectorAll("[data-event-delete-cancel]");
+
+let events = [];
+let companies = [];
+let eventTypes = [];
+let deletingEventId = 0;
+
+function setStatus(message = "", type = "") {
   if (!statusBox) return;
+
   statusBox.textContent = message;
   statusBox.className = "me-form__status";
-  if (type) statusBox.classList.add(`is-${type}`);
-};
 
-const setHint = (message) => {
+  if (type) {
+    statusBox.classList.add(`is-${type}`);
+  }
+}
+
+function setHint(message = "") {
   if (!hint) return;
   hint.textContent = message;
-};
+}
 
-const text = (value, fallback = "—") => {
-  if (value === null || value === undefined) return fallback;
-  const current = String(value).trim();
-  return current === "" ? fallback : current;
-};
+function getFormField(name) {
+  if (!form) return null;
 
-const normalizeText = (value) => String(value ?? "").trim().toLowerCase();
+  const field = form.elements.namedItem(name);
+  if (!field) return null;
 
-const normalizeHour = (value) => {
-  const hour = text(value, "");
+  if (typeof RadioNodeList !== "undefined" && field instanceof RadioNodeList) {
+    return null;
+  }
+
+  return field;
+}
+
+function shortHour(value) {
+  const hour = toText(value, "").trim();
   if (!hour) return "";
   return hour.length >= 5 ? hour.slice(0, 5) : hour;
-};
+}
 
-const fetchJson = async (url, options = {}) => {
-  const res = await fetch(url, options);
-  let payload = null;
+function populateSelect(selectElement, items, placeholder, selectedValue = "") {
+  if (!selectElement) return;
 
-  try {
-    payload = await res.json();
-  } catch {
-    payload = null;
-  }
-
-  if (!res.ok) {
-    const message = payload?.message || `HTTP ${res.status}`;
-    throw new Error(message);
-  }
-
-  return payload ?? {};
-};
-
-const populateSelect = (selectEl, items, placeholder, selected = "") => {
-  if (!selectEl) return;
-
-  selectEl.innerHTML = "";
+  selectElement.innerHTML = "";
 
   const firstOption = document.createElement("option");
   firstOption.value = "";
   firstOption.textContent = placeholder;
-  selectEl.append(firstOption);
+  selectElement.append(firstOption);
 
   items.forEach((item) => {
     const option = document.createElement("option");
     option.value = String(item.id);
-    option.textContent = String(item.name || item.nombre || item.label || `ID ${item.id}`);
-    if (String(option.value) === String(selected)) {
+    option.textContent = toText(item.name || item.nombre, `ID ${item.id}`);
+
+    if (String(option.value) === String(selectedValue)) {
       option.selected = true;
     }
-    selectEl.append(option);
-  });
-};
 
-const updateStats = (events) => {
-  const total = events.length;
-  const totalCapacity = events.reduce((acc, event) => acc + (Number(event.maximun_capacity) || 0), 0);
-  const totalPrice = events.reduce((acc, event) => acc + (Number(event.price) || 0), 0);
+    selectElement.append(option);
+  });
+}
+
+function updateStats(list) {
+  const total = list.length;
+
+  const totalCapacity = list.reduce((sum, event) => {
+    return sum + (Number(event.maximun_capacity) || 0);
+  }, 0);
+
+  const totalPrice = list.reduce((sum, event) => {
+    return sum + (Number(event.price) || 0);
+  }, 0);
+
   const avgPrice = total > 0 ? (totalPrice / total).toFixed(2) : "0.00";
 
   if (totalEl) totalEl.textContent = String(total);
   if (avgPriceEl) avgPriceEl.textContent = `${avgPrice} €`;
   if (totalCapacityEl) totalCapacityEl.textContent = String(totalCapacity);
-};
+}
 
-const resolveStatusClass = (event) => {
+function readFilters() {
+  return {
+    query: normalizeText(filterQueryInput?.value || ""),
+    companyId: String(filterCompanySelect?.value || ""),
+    eventTypeId: String(filterTypeSelect?.value || ""),
+    fromDate: String(filterFromInput?.value || ""),
+    toDate: String(filterToInput?.value || ""),
+  };
+}
+
+function eventMatchesFilters(event, filters) {
+  if (filters.companyId && String(event.id_company) !== filters.companyId) {
+    return false;
+  }
+
+  if (filters.eventTypeId && String(event.id_event_type) !== filters.eventTypeId) {
+    return false;
+  }
+
+  if (filters.fromDate || filters.toDate) {
+    const eventDate = toText(event.date, "");
+
+    if (!eventDate) return false;
+    if (filters.fromDate && eventDate < filters.fromDate) return false;
+    if (filters.toDate && eventDate > filters.toDate) return false;
+  }
+
+  if (!filters.query) {
+    return true;
+  }
+
+  const searchable = [
+    event.name,
+    event.place,
+    event.company_name,
+    event.event_type_name,
+    event.date,
+    event.hour,
+  ]
+    .map((value) => normalizeText(value))
+    .join(" ");
+
+  return searchable.includes(filters.query);
+}
+
+function getFilteredEvents() {
+  const filters = readFilters();
+  return events.filter((event) => eventMatchesFilters(event, filters));
+}
+
+function getBadgeData(event) {
   const capacity = Number(event.maximun_capacity) || 0;
   const price = Number(event.price) || 0;
 
   if (capacity >= 5000) {
-    return { className: "me-event-card__status me-event-card__status--full", label: "Aforo alto" };
+    return {
+      className: "me-event-card__status me-event-card__status--full",
+      label: "Aforo alto",
+    };
   }
-  if (price <= 0) {
-    return { className: "me-event-card__status me-event-card__status--draft", label: "Gratis" };
-  }
-  return { className: "me-event-card__status me-event-card__status--live", label: "Activo" };
-};
 
-const buildEventCard = (event) => {
+  if (price <= 0) {
+    return {
+      className: "me-event-card__status me-event-card__status--draft",
+      label: "Gratis",
+    };
+  }
+
+  return {
+    className: "me-event-card__status me-event-card__status--live",
+    label: "Activo",
+  };
+}
+
+function buildEventCard(event) {
   const card = document.createElement("article");
   card.className = "me-event-card";
 
   const date = document.createElement("p");
   date.className = "me-event-card__date";
-  const hour = normalizeHour(event.hour);
-  date.textContent = `${text(event.date, "Sin fecha")}${hour ? ` · ${hour}` : ""}`;
+  const hour = shortHour(event.hour);
+  date.textContent = `${toText(event.date, "Sin fecha")}${hour ? ` · ${hour}` : ""}`;
 
   const title = document.createElement("h3");
   title.className = "me-event-card__title";
-  title.textContent = text(event.name, "Evento sin nombre");
+  title.textContent = toText(event.name, "Evento sin nombre");
 
   const meta = document.createElement("p");
   meta.className = "me-event-card__meta";
-  meta.textContent = `${text(event.company_name, `Empresa ${text(event.id_company)}`)} · ${text(event.event_type_name, `Tipo ${text(event.id_event_type)}`)} · ${text(event.place, "Sin lugar")}`;
+  meta.textContent = `${toText(event.company_name, `Empresa ${toText(event.id_company)}`)} · ${toText(event.event_type_name, `Tipo ${toText(event.id_event_type)}`)} · ${toText(event.place, "Sin lugar")}`;
 
   const priceInfo = document.createElement("p");
   priceInfo.className = "me-event-card__meta";
-  priceInfo.textContent = `Precio: ${Number(event.price || 0).toFixed(2)} € · Aforo: ${text(event.maximun_capacity, "0")}`;
+  priceInfo.textContent = `Precio: ${Number(event.price || 0).toFixed(2)} € · Aforo: ${toText(event.maximun_capacity, "0")}`;
 
-  const badgeData = resolveStatusClass(event);
-  const status = document.createElement("p");
-  status.className = badgeData.className;
-  status.textContent = badgeData.label;
+  const badge = getBadgeData(event);
+  const badgeElement = document.createElement("p");
+  badgeElement.className = badge.className;
+  badgeElement.textContent = badge.label;
 
   const actions = document.createElement("div");
   actions.className = "me-event-card__actions";
@@ -202,15 +229,17 @@ const buildEventCard = (event) => {
   deleteBtn.textContent = "Eliminar";
 
   actions.append(editBtn, deleteBtn);
-  card.append(date, title, meta, priceInfo, status, actions);
-  return card;
-};
+  card.append(date, title, meta, priceInfo, badgeElement, actions);
 
-const renderEvents = (events) => {
+  return card;
+}
+
+function renderEvents(list) {
   if (!listBox) return;
+
   listBox.innerHTML = "";
 
-  if (!events.length) {
+  if (!list.length) {
     const empty = document.createElement("p");
     empty.className = "me-cards__empty";
     empty.textContent = "No hay eventos registrados todavía.";
@@ -218,200 +247,166 @@ const renderEvents = (events) => {
     return;
   }
 
-  events.forEach((event) => listBox.append(buildEventCard(event)));
-};
-
-const syncEventFiltersFromInputs = () => {
-  state.filters.query = normalizeText(filterQueryInput?.value ?? "");
-  state.filters.companyId = String(filterCompanySelect?.value || "");
-  state.filters.eventTypeId = String(filterTypeSelect?.value || "");
-  state.filters.dateFrom = String(filterFromInput?.value || "");
-  state.filters.dateTo = String(filterToInput?.value || "");
-};
-
-const getFilteredEvents = () => {
-  const { query, companyId, eventTypeId, dateFrom, dateTo } = state.filters;
-
-  return state.events.filter((event) => {
-    if (companyId && String(event.id_company) !== companyId) {
-      return false;
-    }
-
-    if (eventTypeId && String(event.id_event_type) !== eventTypeId) {
-      return false;
-    }
-
-    if (dateFrom || dateTo) {
-      const eventDate = text(event.date, "");
-      if (!eventDate) return false;
-      if (dateFrom && eventDate < dateFrom) return false;
-      if (dateTo && eventDate > dateTo) return false;
-    }
-
-    if (!query) {
-      return true;
-    }
-
-    const searchable = [
-      event.name,
-      event.place,
-      event.company_name,
-      event.event_type_name,
-      event.date,
-      event.hour,
-    ]
-      .map((value) => normalizeText(value))
-      .join(" ");
-
-    return searchable.includes(query);
+  list.forEach((event) => {
+    listBox.append(buildEventCard(event));
   });
-};
+}
 
-const applyEventFilters = () => {
-  syncEventFiltersFromInputs();
+function refreshView() {
+  const filteredEvents = getFilteredEvents();
 
-  const filtered = getFilteredEvents();
-  const total = state.events.length;
+  renderEvents(filteredEvents);
+  updateStats(filteredEvents);
 
-  renderEvents(filtered);
-  updateStats(filtered);
-
-  if (!total) {
+  if (!events.length) {
     setHint("No hay eventos registrados.");
     return;
   }
 
-  if (filtered.length === total) {
-    setHint(`Mostrando ${filtered.length} eventos`);
+  if (filteredEvents.length === events.length) {
+    setHint(`Mostrando ${filteredEvents.length} eventos`);
     return;
   }
 
-  setHint(`Mostrando ${filtered.length} de ${total} eventos`);
-};
+  setHint(`Mostrando ${filteredEvents.length} de ${events.length} eventos`);
+}
 
-const setDeleteModalOpen = (open) => {
+function setDeleteModalOpen(open) {
   if (!deleteModal) return;
 
   deleteModal.hidden = !open;
   deleteModal.classList.toggle("is-open", open);
   document.body.classList.toggle("admin-modal-open", open);
-};
+}
 
-const openDeleteModal = (event) => {
-  state.pendingDeleteId = Number(event.id || 0);
+function openDeleteModal(event) {
+  deletingEventId = Number(event.id || 0);
 
   if (deleteMessage) {
-    deleteMessage.textContent = `Vas a eliminar el evento "${text(event.name, "Sin nombre")}". Esta acción no se puede deshacer.`;
+    deleteMessage.textContent = `Vas a eliminar el evento "${toText(event.name, "Sin nombre")}". Esta acción no se puede deshacer.`;
   }
 
   setDeleteModalOpen(true);
-};
+}
 
-const closeDeleteModal = () => {
-  state.pendingDeleteId = 0;
+function closeDeleteModal() {
+  deletingEventId = 0;
   setDeleteModalOpen(false);
-};
+}
 
-const confirmDeleteEvent = async () => {
-  const id = Number(state.pendingDeleteId || 0);
-  if (!id) {
-    closeDeleteModal();
-    return;
-  }
-
-  closeDeleteModal();
-  await deleteEvent(id);
-};
-
-const resetForm = () => {
+function resetForm(clearStatus = true) {
   if (!form) return;
+
   form.reset();
 
-  const idInput = form.elements.namedItem("id");
-  if (idInput && !(typeof RadioNodeList !== "undefined" && idInput instanceof RadioNodeList)) {
-    idInput.value = "";
+  const idField = getFormField("id");
+  if (idField) {
+    idField.value = "";
   }
 
-  state.editingId = 0;
   if (formTitle) formTitle.textContent = "Registrar evento";
   if (submitBtn) submitBtn.textContent = "Guardar";
   if (cancelBtn) cancelBtn.hidden = true;
-  setStatus("");
-};
 
-const fillFormForEdit = (event) => {
-  if (!form) return;
+  if (clearStatus) {
+    setStatus("");
+  }
+}
 
-  state.editingId = Number(event.id);
+function loadEventInForm(event) {
+  const idField = getFormField("id");
+  const nameField = getFormField("name");
+  const companyField = getFormField("id_company");
+  const typeField = getFormField("id_event_type");
+  const placeField = getFormField("place");
+  const dateField = getFormField("date");
+  const hourField = getFormField("hour");
+  const priceField = getFormField("price");
+  const capacityField = getFormField("maximun_capacity");
+  const posterField = getFormField("poster_image");
+
+  if (idField) idField.value = String(event.id || "");
+  if (nameField) nameField.value = toText(event.name, "");
+  if (companyField) companyField.value = String(event.id_company || "");
+  if (typeField) typeField.value = String(event.id_event_type || "");
+  if (placeField) placeField.value = toText(event.place, "");
+  if (dateField) dateField.value = toText(event.date, "");
+  if (hourField) hourField.value = shortHour(event.hour);
+  if (priceField) priceField.value = String(event.price ?? "");
+  if (capacityField) capacityField.value = String(event.maximun_capacity ?? "");
+  if (posterField) posterField.value = toText(event.poster_image, "");
+
   if (formTitle) formTitle.textContent = "Editar evento";
   if (submitBtn) submitBtn.textContent = "Actualizar";
   if (cancelBtn) cancelBtn.hidden = false;
+
   setStatus("");
+}
 
-  const entries = {
-    id: String(event.id),
-    name: text(event.name, ""),
-    id_company: String(event.id_company || ""),
-    id_event_type: String(event.id_event_type || ""),
-    place: text(event.place, ""),
-    date: text(event.date, ""),
-    hour: normalizeHour(event.hour),
-    price: String(event.price ?? ""),
-    maximun_capacity: String(event.maximun_capacity ?? ""),
-    poster_image: text(event.poster_image, ""),
-  };
+function mapCompanies(data) {
+  return data.map((company) => ({
+    id: Number(company.id),
+    name: toText(company.name, `Empresa ${company.id}`),
+  }));
+}
 
-  Object.entries(entries).forEach(([name, value]) => {
-    const field = form.elements.namedItem(name);
-    if (!field) return;
-    if (typeof RadioNodeList !== "undefined" && field instanceof RadioNodeList) return;
-    field.value = value;
-  });
-};
+function mapEventTypes(data) {
+  return data.map((type) => ({
+    id: Number(type.id),
+    name: toText(type.nombre || type.name, `Tipo ${type.id}`),
+  }));
+}
 
-const loadLookups = async () => {
-  const [companiesPayload, eventTypesPayload] = await Promise.all([
+async function loadLookups() {
+  const selectedCompanyFilter = String(filterCompanySelect?.value || "");
+  const selectedTypeFilter = String(filterTypeSelect?.value || "");
+
+  const [companiesResponse, eventTypesResponse] = await Promise.all([
     fetchJson("/api/companies", { method: "GET" }),
     fetchJson("/api/event-types", { method: "GET" }),
   ]);
 
-  const companies = Array.isArray(companiesPayload?.data) ? companiesPayload.data : [];
-  const eventTypesRaw = Array.isArray(eventTypesPayload?.data) ? eventTypesPayload.data : [];
+  const companiesData = Array.isArray(companiesResponse?.data)
+    ? companiesResponse.data
+    : [];
 
-  state.companies = companies.map((company) => ({
-    id: Number(company.id),
-    name: text(company.name, `Empresa ${company.id}`),
-  }));
+  const eventTypesData = Array.isArray(eventTypesResponse?.data)
+    ? eventTypesResponse.data
+    : [];
 
-  state.eventTypes = eventTypesRaw.map((type) => ({
-    id: Number(type.id),
-    name: text(type.nombre, `Tipo ${type.id}`),
-  }));
+  companies = mapCompanies(companiesData);
+  eventTypes = mapEventTypes(eventTypesData);
 
-  populateSelect(companySelect, state.companies, "Selecciona empresa");
-  populateSelect(eventTypeSelect, state.eventTypes, "Selecciona tipo");
-  populateSelect(filterCompanySelect, state.companies, "Todas las empresas", state.filters.companyId);
-  populateSelect(filterTypeSelect, state.eventTypes, "Todos los tipos", state.filters.eventTypeId);
-};
+  populateSelect(companySelect, companies, "Selecciona empresa");
+  populateSelect(eventTypeSelect, eventTypes, "Selecciona tipo");
+  populateSelect(
+    filterCompanySelect,
+    companies,
+    "Todas las empresas",
+    selectedCompanyFilter,
+  );
+  populateSelect(filterTypeSelect, eventTypes, "Todos los tipos", selectedTypeFilter);
+}
 
-const loadEvents = async () => {
+async function loadEvents() {
   setHint("Cargando eventos...");
+
   try {
-    const payload = await fetchJson("/api/events", { method: "GET" });
-    const events = Array.isArray(payload?.data) ? payload.data : [];
-    state.events = events;
-    applyEventFilters();
+    const response = await fetchJson("/api/events", { method: "GET" });
+    events = Array.isArray(response?.data) ? response.data : [];
+    refreshView();
   } catch (error) {
-    state.events = [];
+    events = [];
     renderEvents([]);
     updateStats([]);
+
     setHint("No se pudieron cargar los eventos.");
     setStatus(error.message || "Error cargando eventos", "error");
   }
-};
+}
 
-const submitForm = async (e) => {
-  e.preventDefault();
+async function saveEvent(event) {
+  event.preventDefault();
   if (!form) return;
 
   const data = new FormData(form);
@@ -439,98 +434,115 @@ const submitForm = async (e) => {
       body: JSON.stringify(payload),
     });
 
-    setStatus(isEditing ? "Evento actualizado correctamente." : "Evento registrado correctamente.", "success");
-    resetForm();
+    resetForm(false);
+    setStatus(
+      isEditing
+        ? "Evento actualizado correctamente."
+        : "Evento registrado correctamente.",
+      "success",
+    );
+
     await loadEvents();
   } catch (error) {
     setStatus(error.message || "No se pudo guardar el evento.", "error");
   }
-};
+}
 
-const deleteEvent = async (id) => {
+async function deleteEvent(id) {
   try {
     setStatus("Eliminando evento...");
+
     await fetchJson(`/api/events?id=${encodeURIComponent(id)}`, {
       method: "DELETE",
     });
+
+    resetForm(false);
     setStatus("Evento eliminado correctamente.", "success");
-    resetForm();
+
     await loadEvents();
   } catch (error) {
     setStatus(error.message || "No se pudo eliminar el evento.", "error");
   }
-};
+}
 
-const onListClick = async (e) => {
-  const target = e.target instanceof Element ? e.target : null;
+async function confirmDeleteEvent() {
+  const id = Number(deletingEventId || 0);
+  closeDeleteModal();
+
+  if (!id) return;
+  await deleteEvent(id);
+}
+
+function onListClick(event) {
+  const target = event.target instanceof Element ? event.target : null;
   if (!target) return;
 
-  const btn = target.closest("button[data-action][data-id]");
-  if (!btn) return;
+  const button = target.closest("button[data-action][data-id]");
+  if (!button) return;
 
-  const id = Number(btn.dataset.id || 0);
-  if (!id) return;
+  const eventId = Number(button.dataset.id || 0);
+  if (!eventId) return;
 
-  const event = state.events.find((item) => Number(item.id) === id);
-  if (!event) return;
+  const selectedEvent = events.find((item) => Number(item.id) === eventId);
+  if (!selectedEvent) return;
 
-  const action = btn.dataset.action;
-  if (action === "edit") {
-    fillFormForEdit(event);
+  if (button.dataset.action === "edit") {
+    loadEventInForm(selectedEvent);
     return;
   }
 
-  if (action === "delete") {
-    openDeleteModal(event);
+  if (button.dataset.action === "delete") {
+    openDeleteModal(selectedEvent);
   }
-};
+}
 
-if (form) form.addEventListener("submit", submitForm);
+function clearFilters() {
+  if (filterQueryInput) filterQueryInput.value = "";
+  if (filterCompanySelect) filterCompanySelect.value = "";
+  if (filterTypeSelect) filterTypeSelect.value = "";
+  if (filterFromInput) filterFromInput.value = "";
+  if (filterToInput) filterToInput.value = "";
+
+  refreshView();
+}
+
+function prepareNewEventForm() {
+  resetForm();
+
+  const firstField = getFormField("name");
+  if (firstField) {
+    firstField.focus();
+  }
+}
+
+if (form) form.addEventListener("submit", saveEvent);
 if (listBox) listBox.addEventListener("click", onListClick);
-if (cancelBtn) cancelBtn.addEventListener("click", resetForm);
-if (resetBtn) {
-  resetBtn.addEventListener("click", () => {
-    resetForm();
-  });
-}
+if (cancelBtn) cancelBtn.addEventListener("click", () => resetForm());
+if (resetBtn) resetBtn.addEventListener("click", () => resetForm());
 if (reloadBtn) reloadBtn.addEventListener("click", loadEvents);
-if (newBtn) {
-  newBtn.addEventListener("click", () => {
-    resetForm();
-    const firstField = form?.elements?.namedItem("name");
-    if (firstField && !(typeof RadioNodeList !== "undefined" && firstField instanceof RadioNodeList)) {
-      firstField.focus();
-    }
-  });
-}
-if (filterQueryInput) filterQueryInput.addEventListener("input", applyEventFilters);
-if (filterCompanySelect) filterCompanySelect.addEventListener("change", applyEventFilters);
-if (filterTypeSelect) filterTypeSelect.addEventListener("change", applyEventFilters);
-if (filterFromInput) filterFromInput.addEventListener("change", applyEventFilters);
-if (filterToInput) filterToInput.addEventListener("change", applyEventFilters);
-if (filterResetBtn) {
-  filterResetBtn.addEventListener("click", () => {
-    if (filterQueryInput) filterQueryInput.value = "";
-    if (filterCompanySelect) filterCompanySelect.value = "";
-    if (filterTypeSelect) filterTypeSelect.value = "";
-    if (filterFromInput) filterFromInput.value = "";
-    if (filterToInput) filterToInput.value = "";
-    applyEventFilters();
-  });
-}
+if (newBtn) newBtn.addEventListener("click", prepareNewEventForm);
+
+if (filterQueryInput) filterQueryInput.addEventListener("input", refreshView);
+if (filterCompanySelect) filterCompanySelect.addEventListener("change", refreshView);
+if (filterTypeSelect) filterTypeSelect.addEventListener("change", refreshView);
+if (filterFromInput) filterFromInput.addEventListener("change", refreshView);
+if (filterToInput) filterToInput.addEventListener("change", refreshView);
+if (filterResetBtn) filterResetBtn.addEventListener("click", clearFilters);
+
 if (deleteConfirmBtn) deleteConfirmBtn.addEventListener("click", confirmDeleteEvent);
 if (deleteCancelButtons.length) {
   deleteCancelButtons.forEach((button) => {
     button.addEventListener("click", closeDeleteModal);
   });
 }
+
 document.addEventListener("keydown", (event) => {
   if (event.key === "Escape" && deleteModal && !deleteModal.hidden) {
     closeDeleteModal();
   }
 });
 
-const init = async () => {
+async function init() {
   try {
     await loadLookups();
     await loadEvents();
@@ -538,6 +550,6 @@ const init = async () => {
     setStatus(error.message || "No se pudo inicializar la pantalla.", "error");
     setHint("No se pudo cargar la configuración inicial.");
   }
-};
+}
 
 init();
