@@ -62,7 +62,7 @@ require_once __DIR__ . "/../../layout/header.php";
         <label class="mc-filter">
           <span>Ciudad</span>
           <select data-company-filter-city>
-            <option value="">Todas</option>
+            <option value="all">Todas</option>
           </select>
         </label>
 
@@ -101,7 +101,7 @@ require_once __DIR__ . "/../../layout/header.php";
     </article>
 
     <aside class="mc-sidebar">
-      <article class="mc-panel">
+      <article class="mc-panel" data-company-edit-or-register>
         <h2 class="mc-panel__title" data-company-form-title>Registrar empresa</h2>
         <form class="mc-form" data-company-crud-form aria-label="Formulario de empresa">
           <input type="hidden" name="id" />

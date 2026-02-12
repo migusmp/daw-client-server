@@ -9,8 +9,8 @@ require_once __DIR__ . "/controllers/EventController.php";
 $router = new Router();
 
 $router->get("/", [HomeController::class, 'index']);
-$router->get("/login", [HomeController::class, 'loginPage']);
-$router->get("/register", [HomeController::class, 'registerPage']);
+$router->get("/login", [HomeController::class, 'index']);
+$router->get("/register", [HomeController::class, 'index']);
 
 $router->post("/api/register", [AuthController::class, 'register']);
 $router->get("/api/me", [AuthController::class, 'me']);

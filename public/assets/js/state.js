@@ -29,6 +29,4 @@ class StateManager {
 
 export const appState = new StateManager({
     user: null,
-    meLoading: false,
-    meError: null,
 });
