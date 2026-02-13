@@ -1,7 +1,9 @@
+import { renderAdminPanel } from "./pages/admin/admin_panel.page.js";
 import { renderHome } from "./pages/home.page.js";
 import { renderLogin } from "./pages/login.page.js";
 import { renderRegister } from "./pages/register.page.js";
 import { appState } from "./state.js";
+import { fetchMe } from "./utils.js";
 
 const app = document.querySelector("#app");
 const headerNav = document.querySelector("#header-navegation");
@@ -10,6 +12,7 @@ const routes = {
     "/": renderHome,
     "/login": renderLogin,
     "/register": renderRegister,
+    "/admin": renderAdminPanel,
 };
 
 function render() {
@@ -20,23 +23,13 @@ function render() {
     else app.innerHTML = "<h1>404</h1><p>Ruta no encontrada</p>";
 }
 
-function go(path) {
+export function go(path) {
     history.pushState({}, "", path);
     render();
 }
 
 async function loadCurrentUser() {
-  try {
-    const response = await fetch("/api/me");
-    const payload = await response.json();
-
-    if (response.ok && payload?.status === "success" && payload?.data) {
-      appState.setState({ user: payload.data });
-      return;
-    }
-  } catch {}
-
-  appState.setState({ user: null });
+  await fetchMe();
 }
 
 function initApp() {

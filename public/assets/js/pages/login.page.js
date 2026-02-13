@@ -1,6 +1,9 @@
-import { redirectTo, renderHeader } from "../utils.js";
+import { fetchMe, renderHeader, verifyUserIsLogged } from "../utils.js";
 
 export function renderLogin({ app, headerNav }) {
+  // Verifica que el usuario esta logueado, y si lo está
+  // redirige a "/" 
+  verifyUserIsLogged();
   const routes = [
     { path: "/", aName: "Inicio" },
     { path: "/login", aName: "Login", className: "btn-login" },
@@ -89,16 +92,16 @@ export function renderLogin({ app, headerNav }) {
 
       if (!res.ok) {
         errorPassword.textContent = payload.message || "Error de login";
-        console.error("Error backend:", payload);
         return;
       }
 
-      console.log("DATA FROM login:", payload);
       successLoginMsg.textContent = payload.message;
 
       emailInput.value = "";
       passwordInput.value = "";
-      redirectTo("/", 1200);
+      // Fetcheamos la informacion del usuario en el login para que al redirigir me salga la información
+      // almacenada en el appState
+      await fetchMe();
     } catch (e) {
       console.error(e);
     }

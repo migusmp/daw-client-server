@@ -1,6 +1,9 @@
-import { renderHeader } from "../utils.js";
+import { renderHeader, verifyUserIsLogged } from "../utils.js";
 
 export function renderRegister({ app, headerNav }) {
+  // Verifica que el usuario esta logueado, y si lo está
+  // redirige a "/" 
+  verifyUserIsLogged();
   const routes = [
     { path: "/", aName: "Inicio" },
     { path: "/login", aName: "Login", className: "btn-login" },

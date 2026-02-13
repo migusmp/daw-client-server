@@ -1,21 +1,17 @@
 import { appState } from "../state.js";
 import { renderHeaderLinks } from "../utils.js";
 
-function escapeHtml(value) {
-  return String(value ?? "-")
-    .replaceAll("&", "&amp;")
-    .replaceAll("<", "&lt;")
-    .replaceAll(">", "&gt;")
-    .replaceAll('"', "&quot;")
-    .replaceAll("'", "&#39;");
-}
-
 export function renderHome({ app, headerNav }) {
   const { user } = appState.getState();
-  const routes = [
+  const routes = !user ? [
     { path: "/", aName: "Inicio" },
     { path: "/login", aName: "Login", className: "btn-login"},
     { path: "/register", aName: "Register", className: "btn-register"},
+  ] : user.role === "ADMIN" ? [
+    { path: "/", aName: "Inicio" },
+    { path: "/admin", aName: "Administración" },
+  ] : [
+    { path: "/", aName: "Inicio" },
   ];
   renderHeaderLinks(headerNav, routes);
 
@@ -35,12 +31,12 @@ export function renderHome({ app, headerNav }) {
             <article class="user-card reveal reveal-delay-1">
               <div class="user-card-head">
                 <h2 class="user-card-title">Tu informaci&oacute;n</h2>
-                <span class="user-role-badge">${escapeHtml(user.role)}</span>
+                <span class="user-role-badge">${user.role}</span>
               </div>
 
               <div class="user-grid">
-                <p class="user-row"><span class="user-label">Nombre</span><strong>${escapeHtml(user.name)}</strong></p>
-                <p class="user-row"><span class="user-label">Email</span><strong>${escapeHtml(user.email)}</strong></p>
+                <p class="user-row"><span class="user-label">Nombre</span><strong>${user.name}</strong></p>
+                <p class="user-row"><span class="user-label">Email</span><strong>${user.email}</strong></p>
               </div>
             </article>
           `
