@@ -1,4 +1,5 @@
-import { fetchMe, renderHeader, verifyUserIsLogged } from "../utils.js";
+import { fetchMe } from "../fetch/user.js";
+import { renderHeader, verifyUserIsLogged } from "../utils.js";
 
 export function renderLogin({ app, headerNav }) {
   // Verifica que el usuario esta logueado, y si lo está

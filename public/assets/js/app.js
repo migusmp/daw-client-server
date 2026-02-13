@@ -1,9 +1,9 @@
+import { fetchMe } from "./fetch/user.js";
 import { renderAdminPanel } from "./pages/admin/admin_panel.page.js";
 import { renderHome } from "./pages/home.page.js";
 import { renderLogin } from "./pages/login.page.js";
 import { renderRegister } from "./pages/register.page.js";
 import { appState } from "./state.js";
-import { fetchMe } from "./utils.js";
 
 const app = document.querySelector("#app");
 const headerNav = document.querySelector("#header-navegation");

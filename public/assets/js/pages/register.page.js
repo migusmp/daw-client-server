@@ -49,4 +49,12 @@ export function renderRegister({ app, headerNav }) {
       </article>
     </section>
   `;
+  
+  const inputName = document.getElementById("name");
+  const inputEmail = document.getElementById("email");
+  const inputPassword = document.getElementById("password");
+
+  const registerBtn = document.querySelector(".login-submit");
+  
+   
 }
