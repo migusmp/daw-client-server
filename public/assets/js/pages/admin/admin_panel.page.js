@@ -10,12 +10,13 @@ export async function renderAdminPanel({ app, headerNav }) {
     redirectTo("/");
   }
 
-  const routes = user?.role === "ADMIN"
-    ? [
-      { path: "/", aName: "Inicio" },
-      { path: "/admin", aName: "Administración" },
-    ]
-    : [{ path: "/", aName: "Inicio" }];
+  const routes =
+    user?.role === "ADMIN"
+      ? [
+          { path: "/", aName: "Inicio" },
+          { path: "/admin", aName: "Administración" },
+        ]
+      : [{ path: "/", aName: "Inicio" }];
 
   renderHeaderLinks(headerNav, routes);
 
@@ -44,8 +45,10 @@ export async function renderAdminPanel({ app, headerNav }) {
     </section>
   `;
   const usersRegistered = document.querySelector("[data-users-registered]");
-  const adminUsersRegistered = document.querySelector("[data-admin-users-registered]");
-  
+  const adminUsersRegistered = document.querySelector(
+    "[data-admin-users-registered]",
+  );
+
   const companiesSection = document.querySelector("[data-companies-section]");
 
   // Obtenemos los usuarios de la bbdd
@@ -54,19 +57,22 @@ export async function renderAdminPanel({ app, headerNav }) {
 
   if (usersRegistered) usersRegistered.textContent = users.length;
   if (adminUsersRegistered)
-    adminUsersRegistered.textContent = users.filter(u => u.role === "ADMIN").length;
+    adminUsersRegistered.textContent = users.filter(
+      (u) => u.role === "ADMIN",
+    ).length;
 
-  companies.forEach(c => {
+  companies.forEach((c) => {
     renderCompanieComponent(companiesSection, c);
-  })
-
+  });
 }
 
 function renderCompanieComponent(renderDiv, company) {
   if (!company) return;
 
   const link = document.createElement("a");
-  link.href = "/admin/company/" + company.id;
+  link.href = `/admin/company?id=${encodeURIComponent(company.id)}`;
+  link.setAttribute("data-link", "");
+
   const h3 = document.createElement("h3");
   h3.textContent = company.name;
 

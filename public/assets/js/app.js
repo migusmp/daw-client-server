@@ -1,5 +1,6 @@
 import { fetchMe } from "./fetch/user.js";
 import { renderAdminPanel } from "./pages/admin/admin_panel.page.js";
+import { renderAdminCompanyPage } from "./pages/admin/company.page.js";
 import { renderHome } from "./pages/home.page.js";
 import { renderLogin } from "./pages/login.page.js";
 import { renderRegister } from "./pages/register.page.js";
@@ -13,6 +14,7 @@ const routes = {
     "/login": renderLogin,
     "/register": renderRegister,
     "/admin": renderAdminPanel,
+    "/admin/company": renderAdminCompanyPage
 };
 
 const pageStylesByRoute = {
@@ -68,7 +70,7 @@ function render() {
 }
 
 export function go(path) {
-    history.pushState({}, "", normalizePath(path));
+    history.pushState({}, "", path);
     render();
 }
 
