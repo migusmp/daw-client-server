@@ -1,8 +1,9 @@
-import { renderHeader, verifyUserIsLogged } from "../utils.js";
+import { fetchMe } from "../fetch/user.js";
+import { redirectTo, renderHeader, verifyUserIsLogged } from "../utils.js";
 
 export function renderRegister({ app, headerNav }) {
   // Verifica que el usuario esta logueado, y si lo está
-  // redirige a "/" 
+  // redirige a "/"
   verifyUserIsLogged();
   const routes = [
     { path: "/", aName: "Inicio" },
@@ -46,15 +47,45 @@ export function renderRegister({ app, headerNav }) {
             <a class="inline-link" href="/login" data-link>Iniciar sesi&oacute;n</a>
           </p>
         </form>
+        <p class="error-register"></p>
       </article>
     </section>
   `;
-  
+
   const inputName = document.getElementById("name");
   const inputEmail = document.getElementById("email");
   const inputPassword = document.getElementById("password");
 
-  const registerBtn = document.querySelector(".login-submit");
-  
-   
+  const form = document.querySelector(".login-form");
+
+  const errorRegister = document.querySelector(".error-register");
+
+  form.addEventListener("submit", async (e) => {
+    e.preventDefault();
+    const nombre = inputName.value.trim();
+    const email = inputEmail.value.trim().toLowerCase();
+    const password = inputPassword.value;
+
+    try {
+      const res = await fetch("/api/register", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ name: nombre, email, password }),
+      });
+
+      const payload = await res.json();
+
+      if (!res.ok || payload?.status !== "success") {
+        errorRegister.textContent = payload?.message || "Error en el registro";
+        return;
+      }
+
+      await fetchMe();
+    } catch (e) {
+      console.error(e);
+      errorRegister.textContent = "Error en el registro";
+    }
+  });
 }

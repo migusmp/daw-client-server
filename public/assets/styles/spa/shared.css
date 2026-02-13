@@ -1,0 +1,49 @@
+/* Shared UI helpers used across SPA routes */
+.inline-link {
+    width: fit-content;
+    color: #0e7490;
+    text-decoration: none;
+    font-weight: 700;
+    letter-spacing: 0.02em;
+    border-bottom: 1px dashed rgba(14, 165, 183, 0.45);
+    transition: color 160ms ease, border-color 160ms ease;
+}
+
+.inline-link:hover {
+    color: #0b5f7a;
+    border-color: rgba(14, 165, 183, 0.68);
+}
+
+.reveal {
+    opacity: 0;
+    transform: translateY(10px);
+    animation: fadeUp 450ms ease-out forwards;
+}
+
+.reveal-delay-1 {
+    animation-delay: 110ms;
+}
+
+@keyframes fadeUp {
+    from {
+        opacity: 0;
+        transform: translateY(12px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes fadeSlide {
+    from {
+        opacity: 0;
+        transform: translateY(6px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}

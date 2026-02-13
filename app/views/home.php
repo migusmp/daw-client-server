@@ -5,7 +5,10 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>Ayuntamiento</title>
-    <link rel="stylesheet" href="/assets/styles/home.css">
+    <link rel="stylesheet" href="/assets/styles/spa/base.css">
+    <link rel="stylesheet" href="/assets/styles/spa/layout/navigation.css">
+    <link rel="stylesheet" href="/assets/styles/spa/shared.css">
+    <link rel="stylesheet" href="/assets/styles/spa/responsive.css">
 </head>
 
 <body>

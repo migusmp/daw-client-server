@@ -18,7 +18,7 @@ $router->post("/api/login", [AuthController::class, 'login']);
 $router->post("/logout", [AuthController::class, 'logout']);
 
 // ADMIN ROUTES
-$router->get("/admin", [AdminController::class, 'index']);
+$router->get("/admin", [HomeController::class, 'index']);
 $router->get("/api/admin/users", [AdminController::class, 'getUsers']);
 
 // COMPANIES PAGES

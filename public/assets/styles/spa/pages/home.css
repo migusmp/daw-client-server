@@ -1,0 +1,144 @@
+/* Home route styles */
+.home-page {
+    max-width: 980px;
+    margin: 0 auto;
+    display: grid;
+    gap: 1.05rem;
+}
+
+.home-hero,
+.user-card,
+.user-empty-card {
+    border: 1px solid var(--line);
+    border-radius: var(--radius-md);
+    background: linear-gradient(156deg, rgba(255, 255, 255, 0.96), rgba(240, 248, 255, 0.94));
+    box-shadow: var(--shadow-soft);
+}
+
+.home-hero {
+    padding: clamp(1.25rem, 2.3vw, 1.9rem);
+    position: relative;
+    overflow: hidden;
+}
+
+.home-hero::after {
+    content: "";
+    position: absolute;
+    width: 240px;
+    height: 240px;
+    right: -70px;
+    top: -75px;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(56, 189, 248, 0.24) 0%, rgba(56, 189, 248, 0) 68%);
+    pointer-events: none;
+}
+
+.home-kicker {
+    font-size: 0.78rem;
+    text-transform: uppercase;
+    letter-spacing: 0.16em;
+    color: #0f7490;
+    margin-bottom: 0.55rem;
+    font-weight: 700;
+}
+
+.home-title {
+    font-size: clamp(2.05rem, 5.2vw, 3.45rem);
+    line-height: 1;
+    color: var(--ink-0);
+    margin-bottom: 0.7rem;
+    text-wrap: balance;
+}
+
+.home-subtitle {
+    max-width: 66ch;
+    color: var(--ink-2);
+    line-height: 1.55;
+}
+
+.user-card {
+    padding: 1.2rem;
+    transition: transform 200ms ease, box-shadow 200ms ease;
+}
+
+.user-card:hover {
+    transform: translateY(-3px);
+    box-shadow: var(--shadow-strong);
+}
+
+.user-card-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.8rem;
+    margin-bottom: 0.9rem;
+}
+
+.user-card-title {
+    font-size: 1.18rem;
+    color: var(--ink-0);
+}
+
+.user-role-badge {
+    border: 1px solid rgba(14, 165, 183, 0.38);
+    background: rgba(14, 165, 183, 0.14);
+    color: #0b5b72;
+    padding: 0.3rem 0.68rem;
+    border-radius: 999px;
+    font-size: 0.74rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    font-weight: 700;
+}
+
+.user-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0.75rem;
+}
+
+.user-row {
+    margin: 0;
+    border: 1px solid var(--line-soft);
+    border-radius: var(--radius-sm);
+    padding: 0.72rem 0.82rem;
+    display: grid;
+    gap: 0.25rem;
+    background: linear-gradient(160deg, rgba(255, 255, 255, 0.82), rgba(241, 247, 255, 0.88));
+    color: var(--ink-1);
+}
+
+.user-label {
+    font-size: 0.73rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: #5b7397;
+    font-weight: 700;
+}
+
+.user-row strong {
+    color: var(--ink-0);
+    font-weight: 700;
+}
+
+.user-empty-card {
+    padding: 1rem 1.05rem;
+    display: grid;
+    gap: 0.45rem;
+}
+
+.user-empty-title {
+    color: var(--ink-0);
+    font-weight: 700;
+}
+
+.user-empty {
+    margin: 0;
+    padding: 0;
+    border: 0;
+    background: transparent;
+    border-radius: 0;
+    color: var(--ink-2);
+    font-weight: 500;
+}
+

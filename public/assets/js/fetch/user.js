@@ -1,3 +1,5 @@
+import { appState } from "../state.js";
+
 export const fetchMe = async () => {
   try {
     const res = await fetch("/api/me", { method: "GET" });

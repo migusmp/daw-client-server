@@ -1,0 +1,143 @@
+/* SPA base styles: design tokens, app shell and global motion preferences */
+:root {
+    --header-h: 82px;
+    --bg-0: #f8fbff;
+    --bg-1: #edf4ff;
+    --bg-2: #e5eeff;
+    --ink-0: #0f172a;
+    --ink-1: #1e293b;
+    --ink-2: #51627f;
+    --line: rgba(15, 23, 42, 0.14);
+    --line-soft: rgba(15, 23, 42, 0.09);
+    --card: rgba(255, 255, 255, 0.86);
+    --card-strong: rgba(255, 255, 255, 0.95);
+    --accent: #0ea5b7;
+    --accent-2: #38bdf8;
+    --accent-soft: rgba(14, 165, 183, 0.16);
+    --ok: #15803d;
+    --danger: #dc2626;
+    --radius-xs: 10px;
+    --radius-sm: 14px;
+    --radius-md: 20px;
+    --radius-lg: 26px;
+    --shadow-soft: 0 16px 34px rgba(15, 23, 42, 0.12);
+    --shadow-strong: 0 24px 56px rgba(15, 23, 42, 0.18);
+}
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+html,
+body {
+    min-height: 100%;
+}
+
+body {
+    color-scheme: light;
+    font-family: "Outfit", "Space Grotesk", "Avenir Next", "Segoe UI", sans-serif;
+    color: var(--ink-1);
+    min-height: 100vh;
+    position: relative;
+    isolation: isolate;
+    overflow-x: hidden;
+    background:
+        radial-gradient(1100px 650px at -8% -15%, rgba(56, 189, 248, 0.26) 0%, transparent 62%),
+        radial-gradient(950px 520px at 110% 8%, rgba(59, 130, 246, 0.17) 0%, transparent 64%),
+        linear-gradient(165deg, var(--bg-0) 0%, var(--bg-1) 52%, var(--bg-2) 100%);
+}
+
+body::before,
+body::after {
+    content: "";
+    position: fixed;
+    pointer-events: none;
+    z-index: -1;
+    filter: blur(28px);
+}
+
+body::before {
+    width: 420px;
+    height: 420px;
+    top: 12vh;
+    left: -90px;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(14, 165, 183, 0.28) 0%, rgba(14, 165, 183, 0) 65%);
+    animation: driftA 18s ease-in-out infinite;
+}
+
+body::after {
+    width: 520px;
+    height: 520px;
+    top: 46vh;
+    right: -180px;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(59, 130, 246, 0.2) 0%, rgba(59, 130, 246, 0) 68%);
+    animation: driftB 22s ease-in-out infinite;
+}
+
+
+main {
+    width: min(1140px, calc(100% - 2rem));
+    min-height: calc(100vh - var(--header-h));
+    margin: clamp(0.8rem, 1.8vw, 1.3rem) auto 0;
+    padding: clamp(1.1rem, 2.2vw, 2rem);
+    background: transparent;
+}
+
+.site-footer {
+    width: 100%;
+    margin: 0;
+    padding: 0.95rem clamp(1rem, 2.8vw, 2rem);
+    border: 0;
+    border-top: 1px solid var(--line-soft);
+    background: linear-gradient(160deg, rgba(245, 250, 255, 0.94), rgba(234, 243, 255, 0.95));
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    color: var(--ink-2);
+}
+
+.site-footer__brand {
+    color: var(--ink-1);
+    font-weight: 700;
+    letter-spacing: 0.02em;
+}
+
+.site-footer__meta {
+    font-size: 0.9rem;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+        animation: none !important;
+        transition: none !important;
+    }
+}
+
+@keyframes driftA {
+    0%,
+    100% {
+        transform: translate3d(0, 0, 0);
+    }
+
+    50% {
+        transform: translate3d(24px, -20px, 0);
+    }
+}
+
+@keyframes driftB {
+    0%,
+    100% {
+        transform: translate3d(0, 0, 0);
+    }
+
+    50% {
+        transform: translate3d(-30px, 18px, 0);
+    }
+}
