@@ -12,12 +12,13 @@ import {
 } from "./company/company.templates.js";
 import {
   setupCompanyEditModal,
+  setupEventDeleteModal,
   setupEventEditModal,
 } from "./company/company.modals.js";
 import { setupCompanyActions } from "./company/company.actions.js";
 
 export async function renderAdminCompanyPage({ app, headerNav }) {
-  document.body.classList.remove("is-company-modal-open", "is-event-modal-open");
+  document.body.classList.remove("is-company-modal-open", "is-event-modal-open", "is-event-delete-modal-open");
 
   const { user } = appState.getState();
   if (user?.role !== "ADMIN" || user === null) {
@@ -70,6 +71,11 @@ export async function renderAdminCompanyPage({ app, headerNav }) {
     companyData,
     companyEventsList,
     safe,
+    onUpdated: () => renderAdminCompanyPage({ app, headerNav }),
+  });
+
+  setupEventDeleteModal({
+    companyEventsList,
     onUpdated: () => renderAdminCompanyPage({ app, headerNav }),
   });
 

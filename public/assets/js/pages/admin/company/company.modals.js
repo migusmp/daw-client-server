@@ -266,3 +266,107 @@ export function setupEventEditModal({
     }
   });
 }
+
+export function setupEventDeleteModal({
+  companyEventsList,
+  onUpdated,
+}) {
+  const eventDeleteButtons = document.querySelectorAll("[data-event-delete]");
+  const modal = document.getElementById("event-delete-modal");
+  const form = document.getElementById("event-delete-form");
+  const confirmButton = document.getElementById("event-delete-confirm");
+  const status = document.getElementById("event-delete-status");
+  const nameEl = document.getElementById("event-delete-name");
+  const subtitle = document.getElementById("event-delete-subtitle");
+  const closeEls = modal?.querySelectorAll("[data-event-delete-modal-close]") ?? [];
+  const eventsById = new Map((companyEventsList ?? []).map((event) => [String(event.id), event]));
+
+  if (!modal || !form || !confirmButton || !status || !nameEl) return;
+
+  let escListener = null;
+  let selectedEvent = null;
+
+  const closeModal = () => {
+    modal.classList.remove("is-open");
+    modal.setAttribute("aria-hidden", "true");
+    document.body.classList.remove("is-event-delete-modal-open");
+    setStatus(status, "", "");
+    selectedEvent = null;
+
+    if (escListener) {
+      document.removeEventListener("keydown", escListener);
+      escListener = null;
+    }
+  };
+
+  const openModal = (eventData) => {
+    if (!eventData) return;
+
+    selectedEvent = eventData;
+    nameEl.textContent = String(eventData.name ?? "este evento");
+    if (subtitle) {
+      subtitle.textContent = `Confirmación de borrado · ${String(eventData.name ?? "Evento")}`;
+    }
+
+    confirmButton.disabled = false;
+    setStatus(status, "", "");
+    modal.classList.add("is-open");
+    modal.setAttribute("aria-hidden", "false");
+    document.body.classList.add("is-event-delete-modal-open");
+    confirmButton.focus();
+
+    escListener = (event) => {
+      if (event.key === "Escape") closeModal();
+    };
+    document.addEventListener("keydown", escListener);
+  };
+
+  eventDeleteButtons.forEach((button) => {
+    button.addEventListener("click", () => {
+      const eventId = button.getAttribute("data-event-delete");
+      const eventData = eventsById.get(String(eventId));
+      openModal(eventData);
+    });
+  });
+
+  closeEls.forEach((el) => {
+    el.addEventListener("click", closeModal);
+  });
+
+  form.addEventListener("submit", async (submitEvent) => {
+    submitEvent.preventDefault();
+    setStatus(status, "", "");
+
+    if (!selectedEvent?.id) {
+      setStatus(status, "No se encontró el evento seleccionado.", "error");
+      return;
+    }
+
+    confirmButton.disabled = true;
+
+    try {
+      const eventId = Number(selectedEvent.id);
+      if (!Number.isInteger(eventId) || eventId <= 0) {
+        throw new Error("Identificador de evento inválido.");
+      }
+
+      const res = await fetch(`/api/events?id=${encodeURIComponent(eventId)}`, {
+        method: "DELETE",
+        headers: {
+          Accept: "application/json",
+        },
+      });
+
+      const response = await res.json().catch(() => null);
+      if (!res.ok || response?.status !== "success") {
+        throw new Error(response?.message || "No se pudo eliminar el evento.");
+      }
+
+      closeModal();
+      await onUpdated?.();
+    } catch (error) {
+      setStatus(status, error?.message || "Ocurrió un error al eliminar el evento.", "error");
+      confirmButton.disabled = false;
+    }
+  });
+}
