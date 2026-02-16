@@ -42,6 +42,10 @@
   gap: 10px;
 }
 
+small {
+    color: #8d8d8d;
+}
+
 .badge{
   font-size: 12px;
   padding: 6px 10px;

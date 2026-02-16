@@ -108,7 +108,7 @@ export async function renderAdminCompanyPage({ app }) {
 
   app.innerHTML = `
     <section class="company-page">
-      <header class="company-header">
+      <div class="company-header">
         <a href="/admin" id="back-link" data-link aria-label="Volver al panel">${btnBack}</a>
 
         <div class="company-header__text">
@@ -120,7 +120,7 @@ export async function renderAdminCompanyPage({ app }) {
         <div class="company-header__right">
           <span class="badge">Activa</span>
         </div>
-      </header>
+      </div>
 
       <div class="company-grid">
         <article class="card">
@@ -178,6 +178,8 @@ export async function renderAdminCompanyPage({ app }) {
 
         <article class="card card--wide">
           <h2 class="card-title">Acciones</h2>
+          <p>Botones para editar o eliminar esta empresa</p>
+          <small>Si la empresa tiene algún evento, esta no puede ser eliminada</small>
 
           <div class="actions">
             <button class="btn btn--primary" id="btn-edit" type="button">Editar</button>
