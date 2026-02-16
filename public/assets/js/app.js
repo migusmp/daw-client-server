@@ -3,6 +3,7 @@ import { renderAdminPanel } from "./pages/admin/admin_panel.page.js";
 import { renderAdminCompanyPage } from "./pages/admin/company.page.js";
 import { renderHome } from "./pages/home.page.js";
 import { renderLogin } from "./pages/login.page.js";
+import { renderNotFound } from "./pages/not_found.page.js";
 import { renderRegister } from "./pages/register.page.js";
 import { appState } from "./state.js";
 
@@ -27,7 +28,10 @@ const pageStylesByRoute = {
     ],
     "/admin/company": [
       "/assets/styles/spa/pages/admin/company_show.css"
-    ]
+    ],
+    "__not_found__": [
+      "/assets/styles/spa/pages/not_found.css",
+    ],
 };
 
 const PAGE_STYLE_ATTR = "data-spa-page-style";
@@ -51,9 +55,12 @@ function normalizeStyleKey(href) {
 
 function syncPageStyles(pathname) {
   const currentPath = normalizePath(pathname);
+  const styleRouteKey = Object.prototype.hasOwnProperty.call(pageStylesByRoute, currentPath)
+    ? currentPath
+    : "__not_found__";
 
   // expected: [{ href, key }]
-  const expected = (pageStylesByRoute[currentPath] ?? []).map((href) => ({
+  const expected = (pageStylesByRoute[styleRouteKey] ?? []).map((href) => ({
     href,                 // lo que vas a cargar en link.href (tal cual)
     key: normalizeStyleKey(href), // lo que vas a comparar
   }));
@@ -88,7 +95,7 @@ function render() {
     syncPageStyles(path);
 
     if (page) page({ app, headerNav });
-    else app.innerHTML = "<h1>404</h1><p>Ruta no encontrada</p>";
+    else renderNotFound({ app, headerNav });
 }
 
 export function go(path) {

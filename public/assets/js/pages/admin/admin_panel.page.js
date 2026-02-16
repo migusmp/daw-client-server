@@ -26,6 +26,14 @@ export async function renderAdminPanel({ app, headerNav }) {
         <p class="home-kicker">Administración</p>
         <h1 class="home-title">Panel de administración</h1>
         <p class="home-subtitle">Gestiona recursos y configuración del portal desde este panel.</p>
+        <div class="admin-quick-actions">
+          <a class="admin-quick-btn admin-quick-btn--primary" href="/admin/manage-companies" data-link>
+            Gestión de empresas
+          </a>
+          <a class="admin-quick-btn admin-quick-btn--secondary" href="/admin/manage-events" data-link>
+            Gestión de eventos
+          </a>
+        </div>
       </article>
     </section>
     
