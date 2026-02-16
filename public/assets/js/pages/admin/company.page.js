@@ -2,9 +2,20 @@ import {
   fetchCompanyEvents,
   fetchCompanyWithId,
 } from "../../fetch/companies.fetch.js";
-import { redirectTo } from "../../utils.js";
+import { appState } from "../../state.js";
+import { redirectTo, renderHeaderLinks } from "../../utils.js";
 
-export async function renderAdminCompanyPage({ app }) {
+export async function renderAdminCompanyPage({ app, headerNav }) {
+  const { user } = appState.getState();
+  if (user?.role !== "ADMIN" || user === null) {
+    return redirectTo("/");
+  }
+
+  renderHeaderLinks(headerNav, [
+    { path: "/", aName: "Inicio" },
+    { path: "/admin", aName: "Administración" },
+  ]);
+
   const id = new URLSearchParams(window.location.search).get("id");
   if (!id) return redirectTo("/admin");
 
@@ -82,7 +93,7 @@ export async function renderAdminCompanyPage({ app }) {
 
   function renderEventsHtml(events) {
     if (!Array.isArray(events) || events.length === 0) {
-      return `<p class="muted">Esta empresa no tiene eventos.</p>`;
+      return `<p class="muted events-empty">Esta empresa no tiene eventos por ahora.</p>`;
     }
 
     return events
@@ -92,7 +103,9 @@ export async function renderAdminCompanyPage({ app }) {
       <div class="event-info">
         <p class="event-name">${safe(ev.name)}</p>
         <p class="event-meta">
-          📍 ${safe(ev.place)} · 📅 ${safe(ev.date)} · 🕒 ${String(ev.hour ?? "—").slice(0, 5)}
+          <span class="event-chip">Lugar: ${safe(ev.place)}</span>
+          <span class="event-chip">Fecha: ${safe(ev.date)}</span>
+          <span class="event-chip">Hora: ${String(ev.hour ?? "—").slice(0, 5)}</span>
         </p>
       </div>
 
@@ -105,6 +118,13 @@ export async function renderAdminCompanyPage({ app }) {
       )
       .join("");
   }
+
+  const eventsCount = Array.isArray(companyEvents) ? companyEvents.length : 0;
+  const eventsCountLabel = `${eventsCount} evento${eventsCount === 1 ? "" : "s"}`;
+  const canDeleteCompany = eventsCount === 0;
+  const deleteDisabledAttrs = canDeleteCompany
+    ? ""
+    : 'disabled aria-disabled="true" title="No puedes eliminar la empresa porque tiene eventos asociados"';
 
   app.innerHTML = `
     <section class="company-page">
@@ -168,22 +188,29 @@ export async function renderAdminCompanyPage({ app }) {
           </dl>
         </article>
 
-        <article class="card card--wide">
-            <h2 class="card-title">Eventos</h2>
+        <article class="card card--wide card--events">
+            <div class="section-head">
+              <h2 class="card-title">Eventos</h2>
+              <span class="section-chip section-chip--info">${eventsCountLabel}</span>
+            </div>
+            <p class="section-description">Administra el listado de eventos asociados a esta empresa.</p>
 
-            <div class="events-list" id="events-list">
+            <div class="events-list events-list--modern" id="events-list">
                 ${renderEventsHtml(companyEvents)}
             </div>
         </article>
 
-        <article class="card card--wide">
-          <h2 class="card-title">Acciones</h2>
-          <p>Botones para editar o eliminar esta empresa</p>
-          <small>Si la empresa tiene algún evento, esta no puede ser eliminada</small>
+        <article class="card card--wide card--actions">
+          <div class="section-head">
+            <h2 class="card-title">Acciones</h2>
+            <span class="section-chip">Empresa</span>
+          </div>
+          <p class="section-description">Gestiona esta empresa de forma segura desde aquí.</p>
+          <p class="section-warning">Si la empresa tiene eventos asociados, no se puede eliminar.</p>
 
-          <div class="actions">
-            <button class="btn btn--primary" id="btn-edit" type="button">Editar</button>
-            <button class="btn btn--danger" id="btn-delete" type="button">Eliminar</button>
+          <div class="actions company-actions">
+            <button class="btn btn--primary" id="btn-edit" type="button">Editar empresa</button>
+            <button class="btn btn--danger" id="btn-delete" type="button" ${deleteDisabledAttrs}>Eliminar empresa</button>
           </div>
         </article>
       </div>
@@ -202,7 +229,9 @@ export async function renderAdminCompanyPage({ app }) {
     console.log("EDIT company", companyData.id);
   });
 
-  document.getElementById("btn-delete")?.addEventListener("click", () => {
-    console.log("DELETE company", companyData.id);
-  });
+  if (canDeleteCompany) {
+    document.getElementById("btn-delete")?.addEventListener("click", () => {
+      console.log("DELETE company", companyData.id);
+    });
+  }
 }

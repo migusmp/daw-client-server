@@ -89,6 +89,16 @@ class CompanyController
             ->setNumberPersonInCharge($payload["contact_number"]);
     }
 
+    public function index()
+    {
+        if (!$this->checkIfIsAdmin()) {
+            header("Location: /login");
+            exit;
+        }
+
+        require_once __DIR__ . "/../views/home.php";
+    }
+
     public function showPage()
     {
         if (!$this->checkIfIsAdmin()) {
