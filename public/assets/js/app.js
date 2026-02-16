@@ -33,6 +33,12 @@ const pageStylesByRoute = {
     "/admin/company": [
       "/assets/styles/spa/pages/admin/company_show.css"
     ],
+    "/admin/manage-companies": [
+      "/assets/styles/spa/pages/admin/manage_companies.css",
+    ],
+    "/admin/manage-events": [
+      "/assets/styles/spa/pages/admin/manage_events.css",
+    ],
     "__not_found__": [
       "/assets/styles/spa/pages/not_found.css",
     ],
