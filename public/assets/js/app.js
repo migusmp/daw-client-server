@@ -25,6 +25,9 @@ const pageStylesByRoute = {
       "/assets/styles/spa/pages/home.css",
       "/assets/styles/spa/pages/admin.css",
     ],
+    "/admin/company": [
+      "/assets/styles/spa/pages/admin/company_show.css"
+    ]
 };
 
 const PAGE_STYLE_ATTR = "data-spa-page-style";
@@ -37,26 +40,45 @@ function normalizePath(path = "/") {
     return pathname.replace(/\/+$/, "") || "/";
 }
 
+function normalizeStyleKey(href) {
+  try {
+    // clave consistente para comparar: pathname
+    return new URL(href, window.location.origin).pathname;
+  } catch {
+    return href;
+  }
+}
+
 function syncPageStyles(pathname) {
-    const currentPath = normalizePath(pathname);
-    const expectedStyles = new Set(pageStylesByRoute[currentPath] ?? []);
-    const activeStyleLinks = document.querySelectorAll(`link[${PAGE_STYLE_ATTR}]`);
+  const currentPath = normalizePath(pathname);
 
-    activeStyleLinks.forEach((link) => {
-        const href = link.getAttribute("href");
-        if (!expectedStyles.has(href)) link.remove();
-    });
+  // expected: [{ href, key }]
+  const expected = (pageStylesByRoute[currentPath] ?? []).map((href) => ({
+    href,                 // lo que vas a cargar en link.href (tal cual)
+    key: normalizeStyleKey(href), // lo que vas a comparar
+  }));
 
-    expectedStyles.forEach((href) => {
-        const selector = `link[${PAGE_STYLE_ATTR}][href="${href}"]`;
-        if (document.querySelector(selector)) return;
+  const expectedKeys = new Set(expected.map((s) => s.key));
+  const activeLinks = document.querySelectorAll(`link[${PAGE_STYLE_ATTR}]`);
 
-        const link = document.createElement("link");
-        link.rel = "stylesheet";
-        link.href = href;
-        link.setAttribute(PAGE_STYLE_ATTR, "true");
-        document.head.appendChild(link);
-    });
+  // Quitar los que sobran
+  activeLinks.forEach((link) => {
+    const key = link.getAttribute("data-style-key") || normalizeStyleKey(link.getAttribute("href"));
+    if (!expectedKeys.has(key)) link.remove();
+  });
+
+  // Añadir los que faltan
+  expected.forEach(({ href, key }) => {
+    const selector = `link[${PAGE_STYLE_ATTR}][data-style-key="${key}"]`;
+    if (document.querySelector(selector)) return;
+
+    const link = document.createElement("link");
+    link.rel = "stylesheet";
+    link.href = href; // IMPORTANTE: cargar el href original
+    link.setAttribute(PAGE_STYLE_ATTR, "true");
+    link.setAttribute("data-style-key", key);
+    document.head.appendChild(link);
+  });
 }
 
 function render() {
