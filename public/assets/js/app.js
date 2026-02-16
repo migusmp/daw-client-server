@@ -1,6 +1,8 @@
 import { fetchMe } from "./fetch/user.js";
 import { renderAdminPanel } from "./pages/admin/admin_panel.page.js";
 import { renderAdminCompanyPage } from "./pages/admin/company.page.js";
+import { renderManageCompaniesPage } from "./pages/admin/manage_companies.page.js";
+import { renderManageEventsPage } from "./pages/admin/manage_events.page.js";
 import { renderHome } from "./pages/home.page.js";
 import { renderLogin } from "./pages/login.page.js";
 import { renderNotFound } from "./pages/not_found.page.js";
@@ -15,7 +17,9 @@ const routes = {
     "/login": renderLogin,
     "/register": renderRegister,
     "/admin": renderAdminPanel,
-    "/admin/company": renderAdminCompanyPage
+    "/admin/company": renderAdminCompanyPage,
+    "/admin/manage-companies": renderManageCompaniesPage,
+    "/admin/manage-events": renderManageEventsPage,
 };
 
 const pageStylesByRoute = {

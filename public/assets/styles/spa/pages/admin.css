@@ -88,6 +88,152 @@
   border-color: rgba(14, 165, 183, 0.3);
 }
 
+.users-section {
+  margin-top: 1.2rem;
+  border: 1px solid var(--line-soft);
+  border-radius: var(--radius-md);
+  background:
+    radial-gradient(120% 120% at -10% -30%, rgba(56, 189, 248, 0.14) 0%, transparent 56%),
+    linear-gradient(160deg, rgba(255, 255, 255, 0.9), rgba(239, 247, 255, 0.92));
+  box-shadow: 0 16px 30px rgba(15, 23, 42, 0.08);
+  padding: 1rem;
+  position: relative;
+  overflow: hidden;
+}
+
+.users-section__head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 0.9rem;
+  margin-bottom: 0.95rem;
+}
+
+.users-section__kicker {
+  margin: 0;
+  font-size: 0.74rem;
+  line-height: 1;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: #0f4c64;
+  font-weight: 800;
+}
+
+.users-section__title {
+  margin: 0.36rem 0 0.18rem;
+  color: var(--ink-0);
+  font-size: clamp(1.45rem, 2vw, 1.9rem);
+  line-height: 1.1;
+}
+
+.users-section__subtitle {
+  margin: 0;
+  color: var(--ink-2);
+  font-size: 0.95rem;
+}
+
+.users-section__count {
+  flex: 0 0 auto;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 34px;
+  padding: 0.4rem 0.72rem;
+  border: 1px solid rgba(14, 165, 183, 0.34);
+  border-radius: 999px;
+  background: linear-gradient(145deg, rgba(14, 165, 183, 0.16), rgba(56, 189, 248, 0.1));
+  color: #0f4c64;
+  font-size: 0.79rem;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.users-table-wrap {
+  border: 1px solid rgba(15, 23, 42, 0.12);
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.78);
+  overflow: auto;
+}
+
+.users-table {
+  width: 100%;
+  min-width: 620px;
+  border-collapse: collapse;
+}
+
+.users-table thead th {
+  padding: 0.8rem 0.86rem;
+  text-align: left;
+  font-size: 0.76rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #52627b;
+  background: rgba(241, 247, 255, 0.92);
+  border-bottom: 1px solid rgba(15, 23, 42, 0.1);
+}
+
+.users-table tbody td {
+  padding: 0.8rem 0.86rem;
+  border-bottom: 1px solid rgba(15, 23, 42, 0.08);
+  color: #334155;
+  font-size: 0.94rem;
+  vertical-align: middle;
+}
+
+.users-table tbody tr:last-child td {
+  border-bottom: 0;
+}
+
+.users-table__row:hover td {
+  background: rgba(239, 247, 255, 0.72);
+}
+
+.users-table__name {
+  font-weight: 700;
+  color: var(--ink-0);
+}
+
+.users-table__email {
+  word-break: break-word;
+}
+
+.users-table__role-cell {
+  width: 1%;
+  white-space: nowrap;
+}
+
+.users-table__role {
+  display: inline-flex;
+  align-items: center;
+  min-height: 24px;
+  padding: 0.2rem 0.5rem;
+  border-radius: 999px;
+  font-size: 0.72rem;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.users-table__role--admin {
+  border: 1px solid rgba(14, 165, 183, 0.34);
+  background: rgba(14, 165, 183, 0.14);
+  color: #0f4c64;
+}
+
+.users-table__role--user {
+  border: 1px solid rgba(59, 130, 246, 0.25);
+  background: rgba(59, 130, 246, 0.12);
+  color: #1e40af;
+}
+
+.users-table__status {
+  text-align: center;
+  color: var(--ink-2);
+  font-weight: 600;
+}
+
 .companies-section {
   margin-top: 1.2rem;
   border: 1px solid var(--line-soft);
@@ -262,6 +408,15 @@
 
   .companies-section {
     padding: 0.85rem;
+  }
+
+  .users-section {
+    padding: 0.85rem;
+  }
+
+  .users-section__head {
+    flex-direction: column;
+    align-items: flex-start;
   }
 
   .companies-section__head {

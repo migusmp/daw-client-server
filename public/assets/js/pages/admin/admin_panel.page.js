@@ -62,12 +62,42 @@ export async function renderAdminPanel({ app, headerNav }) {
         <p class="companies-empty">Cargando empresas...</p>
       </div>
     </section>
+
+    <section class="users-section" data-users-section>
+      <div class="users-section__head">
+        <div class="users-section__titles">
+          <p class="users-section__kicker">Accesos</p>
+          <h2 class="users-section__title">Usuarios registrados</h2>
+          <p class="users-section__subtitle">Listado de cuentas con acceso al portal.</p>
+        </div>
+        <span class="users-section__count" data-users-count>0 usuarios</span>
+      </div>
+
+      <div class="users-table-wrap">
+        <table class="users-table" aria-label="Tabla de usuarios registrados">
+          <thead>
+            <tr>
+              <th>Nombre</th>
+              <th>Email</th>
+              <th>Rol</th>
+            </tr>
+          </thead>
+          <tbody data-users-table-body>
+            <tr>
+              <td class="users-table__status" colspan="3">Cargando usuarios...</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
   `;
   const usersRegistered = document.querySelector("[data-users-registered]");
   const adminUsersRegistered = document.querySelector(
     "[data-admin-users-registered]",
   );
 
+  const usersCount = document.querySelector("[data-users-count]");
+  const usersTableBody = document.querySelector("[data-users-table-body]");
   const companiesCount = document.querySelector("[data-companies-count]");
   const companiesGrid = document.querySelector("[data-companies-grid]");
 
@@ -82,6 +112,8 @@ export async function renderAdminPanel({ app, headerNav }) {
     adminUsersRegistered.textContent = usersList.filter(
       (u) => u.role === "ADMIN",
     ).length;
+
+  renderAllUsers(usersList, { usersCount, usersTableBody });
 
   if (companiesCount) {
     const total = companiesList.length;
@@ -147,4 +179,54 @@ function renderCompanyCard(renderDiv, company) {
   cardHead.append(h3, cta);
   link.append(cardHead, meta);
   renderDiv.append(link);
+}
+
+function renderAllUsers(users, { usersCount, usersTableBody } = {}) {
+  const usersList = Array.isArray(users) ? users : [];
+
+  if (usersCount) {
+    const total = usersList.length;
+    usersCount.textContent = `${total} usuario${total === 1 ? "" : "s"}`;
+  }
+
+  if (!usersTableBody) return;
+  usersTableBody.innerHTML = "";
+
+  if (usersList.length === 0) {
+    const row = document.createElement("tr");
+    const cell = document.createElement("td");
+    cell.className = "users-table__status";
+    cell.colSpan = 3;
+    cell.textContent = "No hay usuarios registrados todavía.";
+    row.append(cell);
+    usersTableBody.append(row);
+    return;
+  }
+
+  usersList.forEach((user) => {
+    if (!user) return;
+
+    const row = document.createElement("tr");
+    row.className = "users-table__row";
+
+    const nameCell = document.createElement("td");
+    nameCell.className = "users-table__name";
+    nameCell.textContent = String(user.name ?? "Sin nombre");
+
+    const emailCell = document.createElement("td");
+    emailCell.className = "users-table__email";
+    emailCell.textContent = String(user.email ?? "Sin email");
+
+    const roleCell = document.createElement("td");
+    roleCell.className = "users-table__role-cell";
+
+    const role = document.createElement("span");
+    const roleValue = String(user.role ?? "USER").toUpperCase();
+    role.className = `users-table__role users-table__role--${roleValue === "ADMIN" ? "admin" : "user"}`;
+    role.textContent = roleValue === "ADMIN" ? "Administrador" : "Usuario";
+
+    roleCell.append(role);
+    row.append(nameCell, emailCell, roleCell);
+    usersTableBody.append(row);
+  });
 }
