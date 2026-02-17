@@ -27,6 +27,41 @@ class CompanyRepository extends BaseRepository
         return array_map(fn($r) => $this->fromRow($r), $rows);
     }
 
+    public function getAllWithEventTypes(): array
+    {
+        $sql = "
+      SELECT
+        e.id_empresa, e.nombre, e.ciudad, e.anio_creacion, e.email_responsable, e.telefono_responsable,
+        te.id_tipo AS tipo_id,
+        te.nombre  AS tipo_nombre
+      FROM empresa e
+      LEFT JOIN evento ev ON ev.id_empresa = e.id_empresa
+      LEFT JOIN tipo_evento te ON te.id_tipo = ev.id_tipo
+      ORDER BY e.id_empresa DESC, te.nombre ASC
+    ";
+
+        $this->db->query($sql);
+        $this->db->execute();
+        $rows = $this->db->results();
+
+        $byId = [];
+
+        foreach ($rows as $row) {
+            $id = (int)$row["id_empresa"];
+
+            if (!isset($byId[$id])) {
+                $byId[$id] = $this->fromRow($row);
+            }
+
+            // si hay tipo, lo añadimos
+            if (!empty($row["tipo_id"])) {
+                $byId[$id]->addEventType((int)$row["tipo_id"], (string)$row["tipo_nombre"]);
+            }
+        }
+
+        return array_values($byId);
+    }
+
     public function findById(int $id): ?Company
     {
         $this->db->query("

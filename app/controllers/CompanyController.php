@@ -171,7 +171,7 @@ class CompanyController
             );
         }
 
-        $c = $this->companies()->getAllCompanies();
+        $c = $this->companies()->getAllCompaniesWithEvents();
         if (!$c) {
             JsonResponse::error(
                 "Error obtaining the companies",

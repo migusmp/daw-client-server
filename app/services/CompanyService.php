@@ -22,6 +22,16 @@ class CompanyService
         }
     }
 
+    public function getAllCompaniesWithEvents(): ?array
+    {
+        try {
+            return $this->companyRepository->getAllWithEventTypes();
+        } catch (PDOException $e) {
+            error_log($e->getMessage());
+            return null;
+        }
+    }
+
     public function getCompanyById(int $id): ?Company
     {
         try {

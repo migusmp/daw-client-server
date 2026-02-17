@@ -1,5 +1,12 @@
+import { fetchAllCompanies } from "../../fetch/companies.fetch.js";
 import { appState } from "../../state.js";
 import { redirectTo, renderHeaderLinks } from "../../utils.js";
+import { fetchEventTypes } from "./company/company.helpers.js";
+
+const COMPANY_LINK_SVG = `<svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" fill="#000" class="bi bi-link-45deg" viewBox="0 0 16 16">
+  <path d="M4.715 6.542 3.343 7.914a3 3 0 1 0 4.243 4.243l1.828-1.829A3 3 0 0 0 8.586 5.5L8 6.086a1 1 0 0 0-.154.199 2 2 0 0 1 .861 3.337L6.88 11.45a2 2 0 1 1-2.83-2.83l.793-.792a4 4 0 0 1-.128-1.287z"/>
+  <path d="M6.586 4.672A3 3 0 0 0 7.414 9.5l.775-.776a2 2 0 0 1-.896-3.346L9.12 3.55a2 2 0 1 1 2.83 2.83l-.793.792c.112.42.155.855.128 1.287l1.372-1.372a3 3 0 1 0-4.243-4.243z"/>
+</svg>`;
 
 export async function renderManageCompaniesPage({ app, headerNav }) {
   const { user } = appState.getState();
@@ -13,6 +20,10 @@ export async function renderManageCompaniesPage({ app, headerNav }) {
     { path: "/admin", aName: "Administración" },
     { path: "/admin/manage-companies", aName: "Gestión empresas" },
   ]);
+
+  const typeOfEvents = await fetchEventTypes();
+  let allCompanies = await fetchAllCompanies();
+  console.log(allCompanies);
 
   app.innerHTML = `
     <section class="mc-page">
@@ -34,7 +45,12 @@ export async function renderManageCompaniesPage({ app, headerNav }) {
               <h2 class="mc-card__title">Listado de empresas</h2>
               <p class="mc-card__subtitle">Tip: haz click en una fila (o Enter) para abrir el detalle.</p>
             </div>
-            <button class="mc-btn" type="button" data-mc-reload>Recargar</button>
+
+            <!-- ✅ dos botones -->
+            <div class="mc-head-actions">
+              <button class="mc-btn" type="button" data-mc-reload>Recargar</button>
+              <button class="mc-btn" type="button" data-mc-clear>Limpiar filtros</button>
+            </div>
           </header>
 
           <div class="mc-filters">
@@ -46,7 +62,7 @@ export async function renderManageCompaniesPage({ app, headerNav }) {
             <label class="mc-field">
               <span>Ciudad</span>
               <select class="mc-select" data-mc-city>
-                <option value="Todas">Todas</option>
+                <option value="all">Todas</option>
                 <option value="Albacete">Albacete</option>
                 <option value="Madrid">Madrid</option>
                 <option value="Valencia">Valencia</option>
@@ -54,9 +70,16 @@ export async function renderManageCompaniesPage({ app, headerNav }) {
             </label>
 
             <label class="mc-field">
+              <span>Tipo de evento</span>
+              <select class="mc-select" data-mc-event-type>
+                <option value="all">Todos</option>
+              </select>
+            </label>
+
+            <label class="mc-field">
               <span>Estado</span>
               <select class="mc-select" data-mc-status>
-                <option value="Todos">Todos</option>
+                <option value="all">Todos</option>
                 <option value="Completos">Completos</option>
                 <option value="Incompletos">Incompletos</option>
               </select>
@@ -70,6 +93,7 @@ export async function renderManageCompaniesPage({ app, headerNav }) {
                   <th>Empresa</th>
                   <th>Ciudad</th>
                   <th>Contacto</th>
+                  <th>Enlace</th>
                 </tr>
               </thead>
 
@@ -287,4 +311,272 @@ export async function renderManageCompaniesPage({ app, headerNav }) {
       </section>
     </section>
   `;
+
+  const filters = {
+    q: "",
+    city: "all",
+    eventType: "all",
+    status: "all",
+  };
+
+  const reloadBtn = document.querySelector("[data-mc-reload]");
+  const clearBtn = document.querySelector("[data-mc-clear]");
+  const searchInput = document.querySelector("[data-mc-search]");
+  // Rellenamos los select de los filtros
+  const eventTypeSelect = document.querySelector("[data-mc-event-type]");
+  fillEventTypesSelect(typeOfEvents, eventTypeSelect);
+
+  const tbody = document.querySelector("[data-mc-tbody]");
+  fillCompaniesTable(tbody, allCompanies);
+
+  const citySelect = document.querySelector("[data-mc-city]");
+  fillCitySelect(citySelect, allCompanies);
+
+  const statusSelect = document.querySelector("[data-mc-status]");
+
+  function companyMatchesFilters(c) {
+    // 1) Buscar
+    const q = normalize(filters.q);
+    if (q) {
+      const haystack = normalize(
+        `${c.name} ${c.city} ${c.email_person_in_charge} ${c.number_person_in_charge}`,
+      );
+      if (!haystack.includes(q)) return false;
+    }
+
+    // 2) Ciudad
+    if (filters.city !== "all") {
+      if (normalize(c.city) !== normalize(filters.city)) return false;
+    }
+
+    // 3) Tipo de evento ✅
+    if (filters.eventType !== "all") {
+      if (!companyHasEventType(c, filters.eventType)) return false;
+    }
+
+    // 4) Estado
+    if (filters.status !== "all") {
+      const complete = isCompanyComplete(c);
+      if (filters.status === "Completos" && !complete) return false;
+      if (filters.status === "Incompletos" && complete) return false;
+    }
+
+    return true;
+  }
+
+  function getFilteredCompanies() {
+    return allCompanies.filter(companyMatchesFilters);
+  }
+
+  function repaint() {
+    const filtered = getFilteredCompanies();
+    fillCompaniesTable(tbody, filtered);
+  }
+
+  repaint();
+
+  // Listeners
+  searchInput?.addEventListener("input", (e) => {
+    filters.q = e.target.value;
+    repaint();
+  });
+
+  citySelect?.addEventListener("change", (e) => {
+    filters.city = e.target.value;
+    repaint();
+  });
+
+  eventTypeSelect?.addEventListener("change", (e) => {
+    filters.eventType = e.target.value;
+    repaint();
+  });
+
+  statusSelect?.addEventListener("change", (e) => {
+    filters.status = e.target.value;
+    repaint();
+  });
+
+  // Limpiar filtros
+  clearBtn?.addEventListener("click", () => {
+    filters.q = "";
+    filters.city = "all";
+    filters.eventType = "all";
+    filters.status = "all";
+
+    if (searchInput) searchInput.value = "";
+    if (citySelect) citySelect.value = "all";
+    if (eventTypeSelect) eventTypeSelect.value = "all";
+    if (statusSelect) statusSelect.value = "all";
+
+    repaint();
+  });
+
+  // Recargar
+  reloadBtn?.addEventListener("click", async () => {
+    allCompanies = await fetchAllCompanies();
+    fillCitySelect(citySelect, allCompanies);
+    repaint();
+  });
+}
+
+function companyHasEventType(c, eventTypeId) {
+  if (eventTypeId === "all") return true;
+
+  const list = c?.event_type;
+  if (!Array.isArray(list) || list.length === 0) return false;
+
+  return list.some((t) => String(t.id) === String(eventTypeId));
+}
+
+function normalize(s) {
+  return String(s ?? "")
+    .trim()
+    .toLowerCase();
+}
+
+function fillCitySelect(citySelect, companies) {
+  if (!Array.isArray(companies)) return;
+
+  citySelect.innerHTML = "";
+
+  const allOption = document.createElement("option");
+  allOption.value = "all";
+  allOption.textContent = "Todas";
+  citySelect.append(allOption);
+
+  const cities = [
+    ...new Set(
+      companies
+        .map((c) => {
+          return c.city;
+        })
+        .join(" ")
+        .split(" "),
+    ),
+  ];
+
+  cities.forEach((c) => {
+    const option = document.createElement("option");
+    option.value = c;
+    option.textContent = c;
+    citySelect.append(option);
+  });
+}
+
+function isCompanyComplete(c) {
+  const hasId = c?.id != null;
+
+  const hasName = (c?.name ?? "").trim() !== "";
+  const hasCity = (c?.city ?? "").trim() !== "";
+  const hasYear = String(c?.creation_year ?? "").trim() !== "";
+  const hasEmail = (c?.email_person_in_charge ?? "").trim() !== "";
+  const hasPhone = (c?.number_person_in_charge ?? "").trim() !== "";
+
+  return hasId && hasName && hasCity && hasYear && hasEmail && hasPhone;
+}
+
+function fillCompaniesTable(tbody, companies) {
+  if (!Array.isArray(companies)) return;
+
+  // Limpia antes de pintar (si repintas)
+  tbody.innerHTML = "";
+
+  companies.forEach((c) => {
+    const tr = document.createElement("tr");
+    tr.className = "mc-row";
+    tr.setAttribute("data-mc-row", "");
+    tr.dataset.id = String(c.id);
+    tr.tabIndex = 0;
+    tr.setAttribute("aria-selected", "false");
+    tr.title = "Click para ver detalle";
+
+    /* --- COMPLETO / INCOMPLETO (ajústalo a tu criterio real) --- */
+    const complete = isCompanyComplete(c);
+
+    const dotClass = complete ? "mc-dot--ok" : "mc-dot--warn";
+    const pillClass = complete ? "mc-pill--ok" : "mc-pill--warn";
+    const pillText = complete ? "Completa" : "Incompleta";
+
+    /* --- TD: Empresa --- */
+    const tdCompany = document.createElement("td");
+
+    const companyDiv = document.createElement("div");
+    companyDiv.className = "mc-company";
+
+    const dot = document.createElement("span");
+    dot.className = `mc-dot ${dotClass}`;
+
+    const meta = document.createElement("div");
+    meta.className = "mc-company__meta";
+
+    const name = document.createElement("div");
+    name.className = "mc-company__name";
+    name.textContent = c.name;
+
+    const sub = document.createElement("div");
+    sub.className = "mc-company__sub";
+
+    const pill = document.createElement("span");
+    pill.className = `mc-pill ${pillClass}`;
+    pill.textContent = pillText;
+
+    const muted = document.createElement("span");
+    muted.className = "mc-muted";
+    muted.textContent = `ID: ${c.id}`;
+
+    sub.append(pill, muted);
+    meta.append(name, sub);
+    companyDiv.append(dot, meta);
+    tdCompany.append(companyDiv);
+
+    /* --- TD: Ciudad --- */
+    const tdCity = document.createElement("td");
+    const spanCity = document.createElement("span");
+    spanCity.className = "mc-city";
+    spanCity.textContent = c.city ?? "—";
+    tdCity.append(spanCity);
+
+    /* --- TD: Contacto --- */
+    const tdContact = document.createElement("td");
+    const contact = document.createElement("div");
+    contact.className = "mc-contact";
+
+    const email = document.createElement("span");
+    email.className = "mc-contact__email";
+    email.textContent = c.email_person_in_charge ?? c.email ?? "—";
+
+    const phone = document.createElement("span");
+    phone.className = "mc-contact__phone";
+    phone.textContent = c.number_person_in_charge || c.phone || "—";
+
+    contact.append(email, phone);
+    tdContact.append(contact);
+
+    /* --- TD: Perfil --- */
+    const tdProfile = document.createElement("td");
+    const linkProfile = document.createElement("a");
+    linkProfile.href = `/admin/company?id=${c.id}`;
+    linkProfile.dataset.link = "";
+    linkProfile.innerHTML = COMPANY_LINK_SVG;
+    
+    tdProfile.append(linkProfile);
+
+    tr.append(tdCompany, tdCity, tdContact, tdProfile);
+
+    // ✅ IMPORTANTE: al tbody
+    tbody.append(tr);
+  });
+}
+
+function fillEventTypesSelect(eventsType, select) {
+  if (!Array.isArray(eventsType)) return;
+
+  eventsType.forEach((e) => {
+    const option = document.createElement("option");
+    option.value = e.id;
+    e.nombre = e.nombre.charAt(0).toUpperCase() + e.nombre.slice(1);
+    option.textContent = e.nombre;
+
+    select.append(option);
+  });
 }

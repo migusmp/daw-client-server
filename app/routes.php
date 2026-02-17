@@ -23,7 +23,7 @@ $router->get("/api/admin/users", [AdminController::class, 'getUsers']);
 
 // COMPANIES PAGES
 $router->get("/admin/company", [CompanyController::class, 'index']);
-$router->get("/admin/manage-companies", [CompanyController::class, 'manageCompanies']);
+$router->get("/admin/manage-companies", [CompanyController::class, 'index']);
 
 // COMPANIES API
 $router->get("/api/companies", [CompanyController::class, 'getAll']);

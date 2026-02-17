@@ -7,8 +7,22 @@ class Company implements JsonSerializable
     private string $creation_year;              // anio_creacion
     private string $email_person_in_charge;     // email_responsable
     private string $number_person_in_charge;    // telefono_responsable
+    private array $eventTypes = [];
 
     public function __construct() {}
+
+    public function addEventType(int $id, string $name): void
+    {
+        foreach ($this->eventTypes as $t) {
+            if ((int)$t["id"] === $id) return;
+        }
+        $this->eventTypes[] = ["id" => $id, "name" => $name];
+    }
+
+    public function getEventTypes(): array
+    {
+        return $this->eventTypes;
+    }
 
     public function getId(): int
     {
@@ -85,6 +99,7 @@ class Company implements JsonSerializable
             "creation_year" => $this->creation_year,
             "email_person_in_charge" => $this->email_person_in_charge,
             "number_person_in_charge" => $this->number_person_in_charge,
+            "event_type" => $this->getEventTypes(),
         ];
     }
 

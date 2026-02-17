@@ -161,9 +161,10 @@ body{
 /* Filters */
 .mc-filters {
   display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
+  grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 10px;
   margin-bottom: 12px;
+  margin-top: 30px;
 }
 
 .mc-field {
@@ -295,6 +296,13 @@ body{
   background: transparent;
 }
 
+
+.mc-head-actions{
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+}
 
 /* Rows hover / selected */
 .mc-row {

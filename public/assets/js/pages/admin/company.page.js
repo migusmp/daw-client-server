@@ -59,7 +59,8 @@ export async function renderAdminCompanyPage({ app, headerNav }) {
   const backLink = document.getElementById("back-link");
   backLink?.addEventListener("click", (event) => {
     event.preventDefault();
-    redirectTo("/admin");
+    window.history.back();
+    //redirectTo("/admin");
   });
 
   setupCompanyEditModal({
