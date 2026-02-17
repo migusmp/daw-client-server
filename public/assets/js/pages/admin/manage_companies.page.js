@@ -259,54 +259,19 @@ export async function renderManageCompaniesPage({ app, headerNav }) {
           </header>
 
           <div data-mc-side>
-            <!-- Panel lateral de ejemplo (Concilia2 seleccionada) -->
-            <div class="mc-side">
-              <section class="mc-side__company">
-                <div class="mc-side__company-left">
-                  <div class="mc-side__name">Concilia2</div>
-                  <div class="mc-side__meta">ID: 2</div>
-                </div>
-                <span class="mc-pill mc-pill--warn">Incompleta</span>
-              </section>
+    <div class="mc-side-empty">
+      <div class="mc-side-empty__icon">i</div>
+      <div class="mc-side-empty__title">Sin empresa seleccionada</div>
+      <div class="mc-side-empty__text">
+        Selecciona una fila de la tabla para ver el detalle aquí.
+      </div>
 
-              <section class="mc-side__grid">
-                <article class="mc-kv">
-                  <div class="mc-kv__label">Ciudad</div>
-                  <div class="mc-kv__value">Albacete</div>
-                </article>
-
-                <article class="mc-kv">
-                  <div class="mc-kv__label">Email</div>
-                  <div class="mc-kv__value mc-kv__mono">info@concilia2.es</div>
-                </article>
-
-                <article class="mc-kv">
-                  <div class="mc-kv__label">Teléfono</div>
-                  <div class="mc-kv__value">—</div>
-                </article>
-
-                <article class="mc-kv">
-                  <div class="mc-kv__label">Estado</div>
-                  <div class="mc-kv__value">Incompleta</div>
-                </article>
-              </section>
-
-              <div class="mc-side__divider"></div>
-
-              <section class="mc-side__actions">
-                <button class="mc-btn mc-btn--primary mc-btn--wide" type="button" data-side-action="edit" data-id="2">
-                  Editar
-                </button>
-                <button class="mc-btn mc-btn--danger mc-btn--wide" type="button" data-side-action="delete" data-id="2">
-                  Eliminar
-                </button>
-              </section>
-
-              <div class="mc-side__note">
-                <strong>Demo:</strong> más adelante aquí meterás el formulario real conectado al backend.
-              </div>
-            </div>
-          </div>
+      <div class="mc-side-empty__tips">
+        <div class="mc-side-tip"><strong>Tip:</strong> puedes usar Enter en una fila.</div>
+        <div class="mc-side-tip"><strong>Tip:</strong> usa los filtros para encontrar más rápido.</div>
+      </div>
+    </div>
+  </div>
         </aside>
       </section>
     </section>
@@ -319,6 +284,7 @@ export async function renderManageCompaniesPage({ app, headerNav }) {
     status: "all",
   };
 
+  const sideEl = document.querySelector(".mc-card--side");
   const reloadBtn = document.querySelector("[data-mc-reload]");
   const clearBtn = document.querySelector("[data-mc-clear]");
   const searchInput = document.querySelector("[data-mc-search]");
@@ -417,6 +383,187 @@ export async function renderManageCompaniesPage({ app, headerNav }) {
     fillCitySelect(citySelect, allCompanies);
     repaint();
   });
+
+  // Click en filas
+  tbody.addEventListener("click", (e) => {
+    // Si clicas en el icono/enlace de la última columna, NO selecciones la fila
+    if (e.target.closest("a[data-link]")) return;
+
+    const row = e.target.closest("tr[data-mc-row]");
+    if (!row) return;
+
+    const id = Number(row.dataset.id);
+
+    setSelectedRow(tbody, id);
+
+    // aquí luego puedes pintar el panel lateral con esa empresa si quieres:
+    const company = allCompanies.find((c) => c.id === id);
+    renderSidePanel(sideEl, company);
+  });
+
+  tbody.addEventListener("keydown", (e) => {
+    const row = e.target.closest("tr[data-mc-row]");
+    if (!row) return;
+
+    if (e.key === "Enter" || e.key === " ") {
+      e.preventDefault();
+      const id = Number(row.dataset.id);
+
+      setSelectedRow(tbody, id);
+      const company = allCompanies.find((c) => c.id === id);
+      renderSidePanel(sideEl, company);
+    }
+  });
+}
+
+// ✅ úsalo así:
+// const sideContainer = document.querySelector("[data-mc-side]");
+// renderSidePanel(sideContainer, company);
+
+function renderSidePanel(sideContainer, company) {
+  if (!sideContainer) return;
+
+  // limpio SOLO el contenedor del panel
+  sideContainer.innerHTML = "";
+
+  // (opcional) estado vacío como en el original
+  if (!company) {
+    // Limpia el contenedor (por si vienes de una selección anterior)
+    sideContainer.innerHTML = "";
+
+    const empty = document.createElement("div");
+    empty.className = "mc-side-empty";
+
+    const icon = document.createElement("div");
+    icon.className = "mc-side-empty__icon";
+    icon.textContent = "👈";
+
+    const title = document.createElement("div");
+    title.className = "mc-side-empty__title";
+    title.textContent = "Sin empresa seleccionada";
+
+    const text = document.createElement("div");
+    text.className = "mc-side-empty__text";
+    text.textContent =
+      "Selecciona una fila de la tabla para ver el detalle aquí.";
+
+    // Tips
+    const tips = document.createElement("div");
+    tips.className = "mc-side-empty__tips";
+
+    const tip1 = document.createElement("div");
+    tip1.className = "mc-side-tip";
+    tip1.innerHTML = "<strong>Tip:</strong> puedes usar Enter en una fila.";
+
+    const tip2 = document.createElement("div");
+    tip2.className = "mc-side-tip";
+    tip2.innerHTML =
+      "<strong>Tip:</strong> usa los filtros para encontrar más rápido.";
+
+    tips.append(tip1, tip2);
+
+    empty.append(icon, title, text, tips, actions);
+    sideContainer.append(empty);
+    return;
+  }
+
+  const complete = isCompanyComplete(company);
+  const statusClass = complete ? "mc-pill--ok" : "mc-pill--warn";
+  const statusText = complete ? "Completa" : "Incompleta";
+
+  // wrapper
+  const mcSide = document.createElement("div");
+  mcSide.className = "mc-side";
+
+  // ===== 1) cabecera empresa =====
+  const sectionCompany = document.createElement("section");
+  sectionCompany.className = "mc-side__company";
+
+  const left = document.createElement("div");
+  left.className = "mc-side__company-left";
+
+  const name = document.createElement("div");
+  name.className = "mc-side__name";
+  name.textContent = company.name ?? "—";
+
+  const meta = document.createElement("div");
+  meta.className = "mc-side__meta";
+  meta.textContent = `ID: ${company.id ?? "—"}`;
+
+  left.append(name, meta);
+
+  const pill = document.createElement("span");
+  pill.className = `mc-pill ${statusClass}`;
+  pill.textContent = statusText;
+
+  // ✅ CLAVADO: left y pill son hermanos dentro de mc-side__company
+  sectionCompany.append(left, pill);
+
+  // ===== 2) grid datos =====
+  const grid = document.createElement("section");
+  grid.className = "mc-side__grid";
+
+  grid.append(
+    createKv("Ciudad", company.city ?? "—"),
+    createKv("Email", company.email_person_in_charge ?? "—", true), // mono
+    createKv("Teléfono", company.number_person_in_charge ?? "—"),
+    createKv("Estado", statusText),
+  );
+
+  // ===== divider =====
+  const divider = document.createElement("div");
+  divider.className = "mc-side__divider";
+
+  // ===== 3) acciones =====
+  const actions = createSideActionsSection(company.id);
+
+  // ===== nota =====
+  const note = document.createElement("div");
+  note.className = "mc-side__note";
+  note.innerHTML =
+    "<strong>Demo:</strong> más adelante aquí meterás el formulario real conectado al backend.";
+
+  // ensamblado final
+  mcSide.append(sectionCompany, grid, divider, actions, note);
+  sideContainer.append(mcSide);
+}
+
+function createKv(labelText, valueText, mono = false) {
+  const article = document.createElement("article");
+  article.className = "mc-kv";
+
+  const label = document.createElement("div");
+  label.className = "mc-kv__label";
+  label.textContent = labelText;
+
+  const value = document.createElement("div");
+  value.className = mono ? "mc-kv__value mc-kv__mono" : "mc-kv__value";
+  value.textContent = valueText;
+
+  article.append(label, value);
+  return article;
+}
+
+function createSideActionsSection(companyId) {
+  const section = document.createElement("section");
+  section.className = "mc-side__actions";
+
+  const editBtn = document.createElement("button");
+  editBtn.className = "mc-btn mc-btn--primary mc-btn--wide";
+  editBtn.type = "button";
+  editBtn.dataset.sideAction = "edit";
+  editBtn.dataset.id = String(companyId);
+  editBtn.textContent = "Editar";
+
+  const deleteBtn = document.createElement("button");
+  deleteBtn.className = "mc-btn mc-btn--danger mc-btn--wide";
+  deleteBtn.type = "button";
+  deleteBtn.dataset.sideAction = "delete";
+  deleteBtn.dataset.id = String(companyId);
+  deleteBtn.textContent = "Eliminar";
+
+  section.append(editBtn, deleteBtn);
+  return section;
 }
 
 function companyHasEventType(c, eventTypeId) {
@@ -558,13 +705,21 @@ function fillCompaniesTable(tbody, companies) {
     linkProfile.href = `/admin/company?id=${c.id}`;
     linkProfile.dataset.link = "";
     linkProfile.innerHTML = COMPANY_LINK_SVG;
-    
+
     tdProfile.append(linkProfile);
 
     tr.append(tdCompany, tdCity, tdContact, tdProfile);
 
     // ✅ IMPORTANTE: al tbody
     tbody.append(tr);
+  });
+}
+
+function setSelectedRow(tbody, id) {
+  tbody.querySelectorAll("tr[data-mc-row]").forEach((tr) => {
+    const isSel = Number(tr.dataset.id) === id;
+    tr.classList.toggle("is-selected", isSel);
+    tr.setAttribute("aria-selected", isSel ? "true" : "false");
   });
 }
 
