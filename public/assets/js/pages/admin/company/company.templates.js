@@ -322,6 +322,43 @@ function renderEventDeleteModalHtml() {
   `;
 }
 
+function renderCompanyDeleteModalHtml({ companyData }) {
+  return `
+    <div class="company-modal company-modal--danger" id="company-delete-modal" aria-hidden="true">
+      <div class="company-modal__backdrop" data-company-delete-modal-close></div>
+      <div class="company-modal__dialog company-modal__dialog--sm" role="dialog" aria-modal="true" aria-labelledby="company-delete-title">
+        <header class="company-modal__header company-modal__header--danger">
+          <div>
+            <p class="company-modal__kicker">Empresa</p>
+            <h3 class="company-modal__title" id="company-delete-title">Eliminar empresa</h3>
+            <p class="company-modal__subtitle">Esta acción no se puede deshacer.</p>
+          </div>
+
+          <button class="company-modal__icon-btn" type="button" data-company-delete-modal-close aria-label="Cerrar modal">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16" aria-hidden="true">
+              <path d="M2.146 2.854a.5.5 0 1 1 .708-.708L8 7.293l5.146-5.147a.5.5 0 0 1 .708.708L8.707 8l5.147 5.146a.5.5 0 0 1-.708.708L8 8.707l-5.146 5.147a.5.5 0 0 1-.708-.708L7.293 8z"/>
+            </svg>
+          </button>
+        </header>
+
+        <form class="company-modal__form" id="company-delete-form" autocomplete="off">
+          <p class="company-modal__warning">
+            Vas a eliminar <strong id="company-delete-name">${safe(companyData.name)}</strong>.
+            Si tiene eventos asociados, el sistema bloqueará el borrado.
+          </p>
+
+          <p class="company-modal__status" id="company-delete-status" aria-live="polite"></p>
+
+          <footer class="company-modal__footer">
+            <button class="btn" type="button" data-company-delete-modal-close>Cancelar</button>
+            <button class="btn btn--danger" id="company-delete-confirm" type="submit">Eliminar empresa</button>
+          </footer>
+        </form>
+      </div>
+    </div>
+  `;
+}
+
 export function renderCompanyPageHtml({
   companyData,
   companyEventsList,
@@ -425,6 +462,7 @@ export function renderCompanyPageHtml({
       </div>
     </section>
     ${renderCompanyEditModalHtml(companyData)}
+    ${renderCompanyDeleteModalHtml({ companyData })}
     ${renderEventEditModalHtml(eventTypes)}
     ${renderEventDeleteModalHtml()}
   `;

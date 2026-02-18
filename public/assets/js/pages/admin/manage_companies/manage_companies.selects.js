@@ -1,3 +1,13 @@
+/**
+ * Rellena un <select> con los tipos de evento.
+ *
+ * @param {{ id: number, nombre: string }[]} eventsType
+ *   Lista de tipos de evento (cada uno con id y nombre).
+ *   Ej: { id: 1, nombre: "Concierto" }
+ * @param {HTMLSelectElement} select
+ *   Select donde se insertarán los <option>.
+ * @returns {void}
+ */
 export function fillEventTypesSelect(eventsType, select) {
   if (!Array.isArray(eventsType)) return;
 
@@ -11,7 +21,22 @@ export function fillEventTypesSelect(eventsType, select) {
     select.append(option);
   });
 }
-
+/**
+ * 
+ * @param {HTMLSelectElement} citySelect 
+ * Select donde se insertarán las ciudades del array que se pasa por parámetros
+ * @param {{ 
+ *    id: number, 
+ *    name: string,
+ *    city: string, 
+ *    creation_year: string,
+ *    email_person_in_charge: string,
+ *    number_person_in_charge: string,
+ *    event_type: {id: number, nombre: string}[] 
+ *   }[]} companies 
+ * Lista de empresas de las que se extraerán las ciudades que existen
+ * @returns {void}
+ */
 export function fillCitySelect(citySelect, companies) {
   if (!Array.isArray(companies)) return;
 

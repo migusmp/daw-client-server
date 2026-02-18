@@ -620,7 +620,9 @@ small {
    ========================= */
 
 body.is-company-modal-open,
-body.is-event-modal-open {
+body.is-company-delete-modal-open,
+body.is-event-modal-open,
+body.is-event-delete-modal-open {
   overflow: hidden;
 }
 
@@ -663,6 +665,10 @@ body.is-event-modal-open {
   overflow: hidden;
 }
 
+.company-modal__dialog--sm {
+  width: min(560px, 100%);
+}
+
 .company-modal__header {
   display: flex;
   align-items: flex-start;
@@ -671,6 +677,11 @@ body.is-event-modal-open {
   padding: 18px 18px 14px;
   border-bottom: 1px solid rgba(15, 23, 42, 0.1);
   background: linear-gradient(180deg, rgba(248, 250, 252, 0.94) 0%, rgba(255, 255, 255, 0.92) 100%);
+}
+
+.company-modal__header--danger {
+  border-bottom-color: rgba(220, 38, 38, 0.18);
+  background: linear-gradient(180deg, rgba(254, 242, 242, 0.92) 0%, rgba(255, 255, 255, 0.94) 100%);
 }
 
 .company-modal__kicker {
@@ -769,6 +780,16 @@ body.is-event-modal-open {
 
 .company-modal__status.is-error {
   color: #b91c1c;
+}
+
+.company-modal__warning {
+  margin: 0 0 10px;
+  padding: 12px 14px;
+  border-radius: 12px;
+  border: 1px solid rgba(220, 38, 38, 0.24);
+  background: rgba(220, 38, 38, 0.08);
+  color: #7f1d1d;
+  line-height: 1.4;
 }
 
 .company-modal__footer {

@@ -7,6 +7,11 @@ import { renderSidePanel } from "./manage_companies/manage_companies.side_panel.
 import { fillCitySelect, fillEventTypesSelect } from "./manage_companies/manage_companies.selects.js";
 import { fillCompaniesTable, setSelectedRow } from "./manage_companies/manage_companies.table.js";
 import { getManageCompaniesTemplate } from "./manage_companies/manage_companies.template.js";
+import {
+  openCreateCompanyModal,
+  openDeleteCompanyModal,
+  openEditCompanyModal,
+} from "./manage_companies/manage_companies.modals.js";
 
 export async function renderManageCompaniesPage({ app, headerNav }) {
   // Obtenemos el estado del usuario
@@ -40,6 +45,8 @@ export async function renderManageCompaniesPage({ app, headerNav }) {
     eventType: "all",
     status: "all",
   };
+
+  const createNewCompanyBtn = document.querySelector("[data-mc-new]");
 
   const sideContentEl = document.querySelector("[data-mc-side]"); // Panel lateral derecho
   
@@ -80,6 +87,27 @@ export async function renderManageCompaniesPage({ app, headerNav }) {
   fillEventTypesSelect(typeOfEvents, eventTypeSelect);
   fillCompaniesTable(tbody, allCompanies);
   fillCitySelect(citySelect, allCompanies);
+
+  function syncCityFilterSelect() {
+    const hasFilterCity = Array.from(citySelect.options).some(
+      (option) => option.value === filters.city,
+    );
+
+    if (!hasFilterCity) {
+      filters.city = "all";
+    }
+
+    citySelect.value = filters.city;
+  }
+
+  async function refreshCompanies() {
+    allCompanies = await fetchAllCompanies();
+    fillCitySelect(citySelect, allCompanies);
+    syncCityFilterSelect();
+    repaint();
+  }
+
+  syncCityFilterSelect();
 
   // Función que 'desmarca' la empresa seleccionada y actualiza el estilo y el
   // contenido del panel lateral
@@ -125,6 +153,13 @@ export async function renderManageCompaniesPage({ app, headerNav }) {
 
   repaint();
 
+  createNewCompanyBtn?.addEventListener("click", () => {
+    openCreateCompanyModal({
+      app,
+      onSuccess: refreshCompanies,
+    });
+  });
+
   // Listeners que escuchan los eventos que les han sido configurados
   // En cada evento se re-renderiza el contenido de la tabla y del panel lateral
   // con la función 'repaint()'
@@ -162,16 +197,47 @@ export async function renderManageCompaniesPage({ app, headerNav }) {
     repaint();
   });
 
-  reloadBtn?.addEventListener("click", async () => {
-    allCompanies = await fetchAllCompanies();
-    fillCitySelect(citySelect, allCompanies);
-    repaint();
-  });
+  reloadBtn?.addEventListener("click", refreshCompanies);
 
   pageEl?.addEventListener("keydown", (e) => {
+    if (document.body.classList.contains("is-mc-modal-open")) return;
     if (e.key !== "Escape" || selectedCompanyId == null) return;
     e.preventDefault();
     clearSelectedCompany();
+  });
+
+  pageEl?.addEventListener("click", (e) => {
+    const actionBtn = e.target.closest("button[data-side-action]");
+    if (!actionBtn) return;
+
+    const id = Number(actionBtn.dataset.id);
+    if (!Number.isFinite(id)) return;
+
+    const company = allCompanies.find((item) => item.id === id);
+    if (!company) return;
+
+    if (actionBtn.dataset.sideAction === "edit") {
+      openEditCompanyModal({
+        app,
+        company,
+        onSuccess: refreshCompanies,
+      });
+      return;
+    }
+
+    if (actionBtn.dataset.sideAction === "delete") {
+      openDeleteCompanyModal({
+        app,
+        company,
+        onSuccess: async () => {
+          if (selectedCompanyId === id) {
+            clearSelectedCompany();
+          }
+
+          await refreshCompanies();
+        },
+      });
+    }
   });
 
   tbody.addEventListener("click", (e) => {

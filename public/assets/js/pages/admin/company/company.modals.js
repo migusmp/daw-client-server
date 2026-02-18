@@ -1,3 +1,8 @@
+import {
+  deleteCompanyById,
+  updateCompany,
+} from "../../../fetch/companies.fetch.js";
+
 function setStatus(statusEl, message = "", type = "") {
   if (!statusEl) return;
   statusEl.textContent = message;
@@ -103,18 +108,9 @@ export function setupCompanyEditModal({ companyData, onUpdated }) {
     submitButton.disabled = true;
 
     try {
-      const res = await fetch("/api/companies", {
-        method: "PUT",
-        headers: {
-          Accept: "application/json",
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(payload),
-      });
-
-      const response = await res.json().catch(() => null);
-      if (!res.ok || response?.status !== "success") {
-        throw new Error(response?.message || "No se pudo actualizar la empresa.");
+      const result = await updateCompany(payload);
+      if (!result.ok) {
+        throw new Error(result.message || "No se pudo actualizar la empresa.");
       }
 
       closeModal();
@@ -123,6 +119,92 @@ export function setupCompanyEditModal({ companyData, onUpdated }) {
       setStatus(status, error?.message || "Ocurrió un error al actualizar.", "error");
     } finally {
       syncSubmitState();
+    }
+  });
+}
+
+export function setupCompanyDeleteModal({
+  companyData,
+  canDeleteCompany,
+  onDeleted,
+}) {
+  const btnDelete = document.getElementById("btn-delete");
+  const modal = document.getElementById("company-delete-modal");
+  const form = document.getElementById("company-delete-form");
+  const confirmButton = document.getElementById("company-delete-confirm");
+  const status = document.getElementById("company-delete-status");
+  const nameEl = document.getElementById("company-delete-name");
+  const closeEls = modal?.querySelectorAll("[data-company-delete-modal-close]") ?? [];
+
+  if (!btnDelete || !modal || !form || !confirmButton || !status || !nameEl) return;
+
+  if (!canDeleteCompany) {
+    return;
+  }
+
+  let escListener = null;
+  const companyName = String(companyData?.name ?? "esta empresa");
+
+  const closeModal = () => {
+    modal.classList.remove("is-open");
+    modal.setAttribute("aria-hidden", "true");
+    document.body.classList.remove("is-company-delete-modal-open");
+    setStatus(status, "", "");
+    confirmButton.disabled = false;
+    confirmButton.textContent = "Eliminar empresa";
+
+    if (escListener) {
+      document.removeEventListener("keydown", escListener);
+      escListener = null;
+    }
+  };
+
+  const openModal = () => {
+    nameEl.textContent = companyName;
+    setStatus(status, "", "");
+    confirmButton.disabled = false;
+    confirmButton.textContent = "Eliminar empresa";
+
+    modal.classList.add("is-open");
+    modal.setAttribute("aria-hidden", "false");
+    document.body.classList.add("is-company-delete-modal-open");
+    confirmButton.focus();
+
+    escListener = (event) => {
+      if (event.key === "Escape") closeModal();
+    };
+    document.addEventListener("keydown", escListener);
+  };
+
+  btnDelete.addEventListener("click", openModal);
+  closeEls.forEach((el) => {
+    el.addEventListener("click", closeModal);
+  });
+
+  form.addEventListener("submit", async (submitEvent) => {
+    submitEvent.preventDefault();
+    setStatus(status, "", "");
+
+    confirmButton.disabled = true;
+    confirmButton.textContent = "Eliminando...";
+
+    try {
+      const companyId = Number(companyData?.id ?? 0);
+      if (!Number.isInteger(companyId) || companyId <= 0) {
+        throw new Error("Identificador de empresa inválido.");
+      }
+
+      const result = await deleteCompanyById(companyId);
+      if (!result.ok) {
+        throw new Error(result.message || "No se pudo eliminar la empresa.");
+      }
+
+      closeModal();
+      await onDeleted?.();
+    } catch (error) {
+      setStatus(status, error?.message || "Ocurrió un error al eliminar la empresa.", "error");
+      confirmButton.disabled = false;
+      confirmButton.textContent = "Eliminar empresa";
     }
   });
 }

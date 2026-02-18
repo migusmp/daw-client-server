@@ -1,5 +1,21 @@
 import { isCompanyComplete } from "./manage_companies.filters.js";
-
+/**
+ * 
+ * @param {HTMLDivElement} sideContainer 
+ * Div en el que se renderizará el contenido del panel lateral derecho
+ * @param {{ 
+ *    id: number, 
+ *    name: string,
+ *    city: string, 
+ *    creation_year: string,
+ *    email_person_in_charge: string,
+ *    number_person_in_charge: string,
+ *    event_type: {id: number, nombre: string}[] 
+ *   }} company 
+ * Datos de la empresa que se renderizarán 
+ * @param {null|string} defaultContent 
+ * @returns {void}
+ */
 export function renderSidePanel(sideContainer, company, defaultContent = null) {
   if (!sideContainer) return;
 
@@ -95,7 +111,7 @@ export function renderSidePanel(sideContainer, company, defaultContent = null) {
   const note = document.createElement("div");
   note.className = "mc-side__note";
   note.innerHTML =
-    "<strong>Demo:</strong> más adelante aquí meterás el formulario real conectado al backend.";
+    "<strong>Tip:</strong> puedes editar o eliminar esta empresa desde los botones de abajo.";
 
   mcSide.append(sectionCompany, grid, divider, actions, note);
   sideContainer.append(mcSide);

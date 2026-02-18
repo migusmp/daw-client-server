@@ -11,14 +11,19 @@ import {
   renderCompanyPageHtml,
 } from "./company/company.templates.js";
 import {
+  setupCompanyDeleteModal,
   setupCompanyEditModal,
   setupEventDeleteModal,
   setupEventEditModal,
 } from "./company/company.modals.js";
-import { setupCompanyActions } from "./company/company.actions.js";
 
 export async function renderAdminCompanyPage({ app, headerNav }) {
-  document.body.classList.remove("is-company-modal-open", "is-event-modal-open", "is-event-delete-modal-open");
+  document.body.classList.remove(
+    "is-company-modal-open",
+    "is-company-delete-modal-open",
+    "is-event-modal-open",
+    "is-event-delete-modal-open",
+  );
 
   const { user } = appState.getState();
   if (user?.role !== "ADMIN" || user === null) {
@@ -68,6 +73,12 @@ export async function renderAdminCompanyPage({ app, headerNav }) {
     onUpdated: () => renderAdminCompanyPage({ app, headerNav }),
   });
 
+  setupCompanyDeleteModal({
+    companyData,
+    canDeleteCompany,
+    onDeleted: () => redirectTo("/admin/manage-companies"),
+  });
+
   setupEventEditModal({
     companyData,
     companyEventsList,
@@ -79,6 +90,4 @@ export async function renderAdminCompanyPage({ app, headerNav }) {
     companyEventsList,
     onUpdated: () => renderAdminCompanyPage({ app, headerNav }),
   });
-
-  setupCompanyActions({ companyData, companyEventsList, canDeleteCompany });
 }

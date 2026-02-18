@@ -1,6 +1,22 @@
 import { COMPANY_LINK_SVG } from "./manage_companies.constants.js";
 import { isCompanyComplete } from "./manage_companies.filters.js";
 
+/**
+ * 
+ * @param {HTMLTableSectionElement} tbody
+ * Elemento html donde se renderizarán las filas
+ * @param {{
+ *   id?: number|string,
+ *   name?: string,
+ *   city?: string,
+ *   creation_year?: string|number,
+ *   email_person_in_charge?: string,
+ *   number_person_in_charge?: string,
+ *   event_type?: { id: number|string, nombre: string }[]
+ * }} companies 
+ * Array de empresas, las cuales se van a renderizar
+ * @returns {void}
+ */
 export function fillCompaniesTable(tbody, companies) {
   if (!Array.isArray(companies)) return;
 
@@ -86,6 +102,13 @@ export function fillCompaniesTable(tbody, companies) {
   });
 }
 
+/**
+ * 
+ * @param {HTMLTableSectionElement} tbody 
+ * Elemento HTML en el que se cambiará la clase de las rows seleccionadas
+ * @param {*} id 
+ * ID de la row seleccionada
+ */
 export function setSelectedRow(tbody, id) {
   tbody.querySelectorAll("tr[data-mc-row]").forEach((tr) => {
     const isSelected = Number(tr.dataset.id) === id;
