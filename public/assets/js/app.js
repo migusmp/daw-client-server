@@ -11,139 +11,106 @@ import { appState } from "./state.js";
 
 const app = document.querySelector("#app");
 const headerNav = document.querySelector("#header-navegation");
+const ctx = { app, headerNav };
 
-const routes = {
-    "/": renderHome,
-    "/login": renderLogin,
-    "/register": renderRegister,
-    "/admin": renderAdminPanel,
-    "/admin/company": renderAdminCompanyPage,
-    "/admin/manage-companies": renderManageCompaniesPage,
-    "/admin/manage-events": renderManageEventsPage,
-};
-
-const pageStylesByRoute = {
-    "/": ["/assets/styles/spa/pages/home.css"],
-    "/login": ["/assets/styles/spa/pages/auth.css"],
-    "/register": ["/assets/styles/spa/pages/auth.css"],
-    "/admin": [
+/** 1) Un solo mapa: render + estilos */
+const PAGES = {
+  "/": {
+    render: renderHome,
+    styles: ["/assets/styles/spa/pages/home.css"],
+  },
+  "/login": {
+    render: renderLogin,
+    styles: ["/assets/styles/spa/pages/auth.css"],
+  },
+  "/register": {
+    render: renderRegister,
+    styles: ["/assets/styles/spa/pages/auth.css"],
+  },
+  "/admin": {
+    render: renderAdminPanel,
+    styles: [
       "/assets/styles/spa/pages/home.css",
       "/assets/styles/spa/pages/admin.css",
     ],
-    "/admin/company": [
-      "/assets/styles/spa/pages/admin/company_show.css"
-    ],
-    "/admin/manage-companies": [
-      "/assets/styles/spa/pages/admin/manage_companies.css",
-    ],
-    "/admin/manage-events": [
-      "/assets/styles/spa/pages/admin/manage_events.css",
-    ],
-    "__not_found__": [
-      "/assets/styles/spa/pages/not_found.css",
-    ],
+  },
+  "/admin/company": {
+    render: renderAdminCompanyPage,
+    styles: ["/assets/styles/spa/pages/admin/company_show.css"],
+  },
+  "/admin/manage-companies": {
+    render: renderManageCompaniesPage,
+    styles: ["/assets/styles/spa/pages/admin/manage_companies.css"],
+  },
+  "/admin/manage-events": {
+    render: renderManageEventsPage,
+    styles: ["/assets/styles/spa/pages/admin/manage_events.css"],
+  },
 };
 
-const PAGE_STYLE_ATTR = "data-spa-page-style";
+const NOT_FOUND = {
+  render: renderNotFound,
+  styles: ["/assets/styles/spa/pages/not_found.css"],
+};
 
-function normalizePath(path = "/") {
-    if (!path) return "/";
+const STYLE_ATTR = "data-spa-style";
 
-    const [pathname] = String(path).split(/[?#]/, 1);
-    if (!pathname || pathname === "/") return "/";
-    return pathname.replace(/\/+$/, "") || "/";
+// Normalizar ruta
+function pathOf(urlPath = "/") {
+  const p = (urlPath || "/").split("?")[0].split("#")[0];
+  return p !== "/" ? p.replace(/\/+$/, "") : "/";
 }
 
-function normalizeStyleKey(href) {
-  try {
-    // clave consistente para comparar: pathname
-    return new URL(href, window.location.origin).pathname;
-  } catch {
-    return href;
-  }
-}
+function setPageStyles(hrefs = []) {
+  // elimina estilos SPA anteriores
+  document.querySelectorAll(`link[${STYLE_ATTR}]`).forEach((l) => l.remove());
 
-function syncPageStyles(pathname) {
-  const currentPath = normalizePath(pathname);
-  const styleRouteKey = Object.prototype.hasOwnProperty.call(pageStylesByRoute, currentPath)
-    ? currentPath
-    : "__not_found__";
-
-  // expected: [{ href, key }]
-  const expected = (pageStylesByRoute[styleRouteKey] ?? []).map((href) => ({
-    href,                 // lo que vas a cargar en link.href (tal cual)
-    key: normalizeStyleKey(href), // lo que vas a comparar
-  }));
-
-  const expectedKeys = new Set(expected.map((s) => s.key));
-  const activeLinks = document.querySelectorAll(`link[${PAGE_STYLE_ATTR}]`);
-
-  // Quitar los que sobran
-  activeLinks.forEach((link) => {
-    const key = link.getAttribute("data-style-key") || normalizeStyleKey(link.getAttribute("href"));
-    if (!expectedKeys.has(key)) link.remove();
-  });
-
-  // Añadir los que faltan
-  expected.forEach(({ href, key }) => {
-    const selector = `link[${PAGE_STYLE_ATTR}][data-style-key="${key}"]`;
-    if (document.querySelector(selector)) return;
-
+  // añade estilos de la página
+  hrefs.forEach((href) => {
     const link = document.createElement("link");
     link.rel = "stylesheet";
-    link.href = href; // IMPORTANTE: cargar el href original
-    link.setAttribute(PAGE_STYLE_ATTR, "true");
-    link.setAttribute("data-style-key", key);
+    link.href = href;
+    link.setAttribute(STYLE_ATTR, "1");
     document.head.appendChild(link);
   });
 }
 
 function render() {
-    const path = normalizePath(window.location.pathname);
-    const page = routes[path];
+  const path = pathOf(window.location.pathname);
+  const page = PAGES[path] ?? NOT_FOUND;
 
-    syncPageStyles(path);
-
-    if (page) page({ app, headerNav });
-    else renderNotFound({ app, headerNav });
+  setPageStyles(page.styles);
+  page.render(ctx);
 }
 
 export function go(path) {
-    history.pushState({}, "", path);
-    render();
-}
-
-async function loadCurrentUser() {
-  await fetchMe();
-}
-
-async function initApp() {
-  await loadCurrentUser();
-
-  appState.subscribe(() => {
-    render();
-  });
-
+  history.pushState({}, "", path);
   render();
 }
 
-if (app) {
-  // Intercepta clicks en <a data-link>
+function setupNavigation() {
   document.addEventListener("click", (e) => {
     const a = e.target.closest("a[data-link]");
     if (!a) return;
-
     e.preventDefault();
     go(a.getAttribute("href"));
   });
 
-  // Botones atrás/adelante
   window.addEventListener("popstate", render);
+}
 
+async function initApp() {
+  await fetchMe();
+  appState.subscribe(render);
+  render();
+}
+
+if (!app) {
+  console.error("No se encontró #app");
+} else {
+  setupNavigation();
   initApp().catch((e) => {
     console.error("Error inicializando la app", e);
     render();
   });
-} else {
-  console.error("No se encontró #app");
 }
