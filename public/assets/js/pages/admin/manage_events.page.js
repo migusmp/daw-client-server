@@ -27,6 +27,26 @@ export async function renderManageEventsPage({ app, headerNav }) {
         </div>
       </article>
 
+      <section class="me-stats" aria-label="Métricas de eventos">
+        <article class="me-stat">
+          <p class="me-stat__label">Publicados</p>
+          <p class="me-stat__value" data-events-total>0</p>
+          <p class="me-stat__meta">Eventos registrados actualmente</p>
+        </article>
+
+        <article class="me-stat">
+          <p class="me-stat__label">Precio medio</p>
+          <p class="me-stat__value" data-events-price-average>0 €</p>
+          <p class="me-stat__meta">Promedio en el catálogo</p>
+        </article>
+
+        <article class="me-stat">
+          <p class="me-stat__label">Aforo total</p>
+          <p class="me-stat__value" data-events-capacity-total>0</p>
+          <p class="me-stat__meta">Suma de capacidades máximas</p>
+        </article>
+      </section>
+
       <section class="me-layout">
         <article class="me-card me-card--main">
           <header class="me-card__head">
@@ -34,7 +54,10 @@ export async function renderManageEventsPage({ app, headerNav }) {
               <h2 class="me-card__title">Agenda de eventos</h2>
               <p class="me-card__subtitle">Estructura lista para que añadas la lógica de filtrado y acciones CRUD.</p>
             </div>
-            <button class="me-btn" type="button">Recargar</button>
+            <div class="me-card__actions">
+              <button class="me-btn" type="button">Recargar</button>
+              <button class="me-btn" type="button" data-events-clear-filters>Limpiar filtros</button>
+            </div>
           </header>
 
           <div class="me-filters">
@@ -63,6 +86,11 @@ export async function renderManageEventsPage({ app, headerNav }) {
                 <option>Finalizados</option>
               </select>
             </label>
+
+            <label class="me-field">
+              <span>Precio</span>
+              <input class="me-input" type="number" min="0" step="0.01" placeholder="0.00" />
+            </label>
           </div>
 
           <div class="me-table-wrap">
@@ -73,13 +101,14 @@ export async function renderManageEventsPage({ app, headerNav }) {
                   <th>Empresa</th>
                   <th>Lugar</th>
                   <th>Fecha</th>
+                  <th>Precio</th>
                   <th>Hora</th>
                   <th>Acciones</th>
                 </tr>
               </thead>
               <tbody>
                 <tr>
-                  <td class="me-table__status" colspan="6">Aquí aparecerán los eventos cuando conectes los datos.</td>
+                  <td class="me-table__status" colspan="7">Aquí aparecerán los eventos cuando conectes los datos.</td>
                 </tr>
               </tbody>
             </table>
@@ -94,4 +123,18 @@ export async function renderManageEventsPage({ app, headerNav }) {
       </section>
     </section>
   `;
+
+  const clearFiltersBtn = app.querySelector("[data-events-clear-filters]");
+  const filterFields = app.querySelectorAll(".me-filters .me-input, .me-filters .me-select");
+
+  clearFiltersBtn?.addEventListener("click", () => {
+    filterFields.forEach((field) => {
+      if (field.tagName === "SELECT") {
+        field.selectedIndex = 0;
+        return;
+      }
+
+      field.value = "";
+    });
+  });
 }

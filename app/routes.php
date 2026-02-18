@@ -34,7 +34,7 @@ $router->get("/api/companies/show", [CompanyController::class, "getOne"]);
 $router->get("/api/company/events", [CompanyController::class, 'getEventsByCompany']);
 
 // EVENTS PAGES
-$router->get("/admin/manage-events", [EventController::class, 'manageEvent']);
+$router->get("/admin/manage-events", [HomeController::class, 'index']);
 
 // EVENTS API
 $router->get("/api/events", [EventController::class, 'getAll']);
