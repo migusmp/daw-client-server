@@ -1,5 +1,7 @@
 import { appState } from "../../state.js";
-import { redirectTo, renderHeaderLinks } from "../../utils.js";
+import { fetchJson, redirectTo, renderHeaderLinks } from "../../utils.js";
+import { fetchEventTypes } from "./company/company.helpers.js";
+import { getManageEventsTemplate } from "./manage_events/manage_events.template.js";
 
 export async function renderManageEventsPage({ app, headerNav }) {
   const { user } = appState.getState();
@@ -14,118 +16,89 @@ export async function renderManageEventsPage({ app, headerNav }) {
     { path: "/admin/manage-events", aName: "Gestión eventos" },
   ]);
 
-  app.innerHTML = `
-    <section class="me-page">
-      <article class="me-hero reveal">
-        <p class="me-kicker">Administración</p>
-        <h1 class="me-title">Gestión de eventos</h1>
-        <p class="me-subtitle">Base de trabajo para filtrar, crear y mantener el catálogo de eventos.</p>
+  // Obtener todos los eventos
+  const allEvents = await fetchJson("/api/events", { method: "GET" });
+  if (!allEvents) {
+    console.error("Error al requerir los eventos:", allEvents);
+    return;
+  }
 
-        <div class="me-hero-actions">
-          <a class="me-btn" href="/admin" data-link>Volver al panel</a>
-          <button class="me-btn me-btn--primary" type="button">Nuevo evento</button>
-        </div>
-      </article>
+  console.log(allEvents);
+  const allCompanies = await fetchJson("/api/companies", { method: "GET" });
+  if (!allCompanies) {
+    console.error("Error al requerir las empresas:", allEvents);
+    return;
+  }
 
-      <section class="me-stats" aria-label="Métricas de eventos">
-        <article class="me-stat">
-          <p class="me-stat__label">Publicados</p>
-          <p class="me-stat__value" data-events-total>0</p>
-          <p class="me-stat__meta">Eventos registrados actualmente</p>
-        </article>
+  const allEventTypes = await fetchEventTypes();
+  if (!allEventTypes) {
+    console.error("Error al requerir los tipos de evento:", allEventTypes);
+    return;
+  }
 
-        <article class="me-stat">
-          <p class="me-stat__label">Precio medio</p>
-          <p class="me-stat__value" data-events-price-average>0 €</p>
-          <p class="me-stat__meta">Promedio en el catálogo</p>
-        </article>
+  app.innerHTML = getManageEventsTemplate();
 
-        <article class="me-stat">
-          <p class="me-stat__label">Aforo total</p>
-          <p class="me-stat__value" data-events-capacity-total>0</p>
-          <p class="me-stat__meta">Suma de capacidades máximas</p>
-        </article>
-      </section>
+  const filters = {
+    q: "",
+    companyId: "",
+    date: "",
+    status: "",
+    price: "",
+    event_type: "",
+  };
 
-      <section class="me-layout">
-        <article class="me-card me-card--main">
-          <header class="me-card__head">
-            <div>
-              <h2 class="me-card__title">Agenda de eventos</h2>
-              <p class="me-card__subtitle">Estructura lista para que añadas la lógica de filtrado y acciones CRUD.</p>
-            </div>
-            <div class="me-card__actions">
-              <button class="me-btn" type="button">Recargar</button>
-              <button class="me-btn" type="button" data-events-clear-filters>Limpiar filtros</button>
-            </div>
-          </header>
+  const page = document.querySelector(".me-page");
 
-          <div class="me-filters">
-            <label class="me-field">
-              <span>Buscar</span>
-              <input class="me-input" type="search" placeholder="Nombre, lugar o tipo" />
-            </label>
+  // SELECTORS DE ESTADÍSTICAS GLOBALES
+  const totalEventsStat = document.querySelector("[data-events-total]");
+  const mediumPrice = document.querySelector("[data-events-price-average]");
+  const totalCapacityEvents = document.querySelector(
+    "[data-events-capacity-total]",
+  );
 
-            <label class="me-field">
-              <span>Empresa</span>
-              <select class="me-select">
-                <option>Todas</option>
-              </select>
-            </label>
+  // Actualizar las estadísticas globales de los eventos creados
+  updateStats(totalEventsStat, mediumPrice, totalCapacityEvents, allEvents);
 
-            <label class="me-field">
-              <span>Fecha</span>
-              <input class="me-input" type="date" />
-            </label>
+  // SELECTORS DE 'SELECTS' E 'INPUTS' DE LA TABLA
+  const searchInput = document.querySelector("[data-search-event]");
+  const companiesSelect = document.querySelector("[data-company-select]");
+  const dateInput = document.querySelector("[data-date-input]");
+  const statusSelect = document.querySelector("[date-status-select]");
+  const priceInput = document.querySelector("[date-status-select]");
+  const eventTypeSelect = document.querySelector("[data-event-type-select]");
 
-            <label class="me-field">
-              <span>Estado</span>
-              <select class="me-select">
-                <option>Todos</option>
-                <option>Próximos</option>
-                <option>Finalizados</option>
-              </select>
-            </label>
+  // Cargar información en el select de las empresas
+  fillCompaniesSelect(companiesSelect, allCompanies);
+  fillTypeEventSelect(eventTypeSelect, allEventTypes);
 
-            <label class="me-field">
-              <span>Precio</span>
-              <input class="me-input" type="number" min="0" step="0.01" placeholder="0.00" />
-            </label>
-          </div>
+  // Recogemos el body de la tabla
+  const tbody = document.querySelector(".tbody");
+  renderEventsOnTable(tbody, allEvents);
 
-          <div class="me-table-wrap">
-            <table class="me-table" aria-label="Tabla de eventos">
-              <thead>
-                <tr>
-                  <th>Evento</th>
-                  <th>Empresa</th>
-                  <th>Lugar</th>
-                  <th>Fecha</th>
-                  <th>Precio</th>
-                  <th>Hora</th>
-                  <th>Acciones</th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr>
-                  <td class="me-table__status" colspan="7">Aquí aparecerán los eventos cuando conectes los datos.</td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
-        </article>
-
-        <aside class="me-card me-card--side">
-          <h2 class="me-card__title">Panel lateral</h2>
-          <p class="me-card__subtitle">Reserva este bloque para formulario de alta/edición o vista previa del evento seleccionado.</p>
-          <div class="me-side-placeholder">Sin evento seleccionado</div>
-        </aside>
-      </section>
-    </section>
-  `;
+  // Recogemos el panel lateral derecho
+  const sideEl = document.querySelector(".me-card--side");
 
   const clearFiltersBtn = app.querySelector("[data-events-clear-filters]");
-  const filterFields = app.querySelectorAll(".me-filters .me-input, .me-filters .me-select");
+  const filterFields = app.querySelectorAll(
+    ".me-filters .me-input, .me-filters .me-select",
+  );
+
+  tbody?.addEventListener("click", (e) => {
+    const eventRow = e.target.closest("[data-event-id-row]");
+    console.log(eventRow.textContent);
+    const id = Number(eventRow.getAttribute("data-event-id-row"));
+    const event = allEvents.filter((e) => e.id === id);
+    console.log(event);
+    // Pongo el [0] porque el filtrado me devuelve un array de una sola posición
+    // y para acceder directamente al evento debo seleccionar esa posición
+    renderSidePanel(sideEl, event[0]);
+  });
+
+  page?.addEventListener("keydown", (e) => {
+    if (e.key !== "Escape") return;
+    e.preventDefault();
+    renderSidePanel(sideEl, null);
+  });
 
   clearFiltersBtn?.addEventListener("click", () => {
     filterFields.forEach((field) => {
@@ -137,4 +110,144 @@ export async function renderManageEventsPage({ app, headerNav }) {
       field.value = "";
     });
   });
+}
+
+function renderSidePanel(sideEl, event) {
+  if (!sideEl) return;
+  if (!event) {
+    sideEl.innerHTML = `
+      <h2 class="me-card__title">Panel lateral</h2>
+      <div class="me-side-placeholder">Sin evento seleccionado</div>
+    `;
+
+    return;
+  }
+
+  sideEl.innerHTML = `
+    <h1 class="me-card__title">Panel lateral</h1>
+    <div class="data-event">
+      <span>Nombre</span>
+      <p>${event.name}</p>
+    </div>
+    <div class="data-event">
+      <span>Lugar</span>
+      <p>${event.place}</p>
+    </div>
+    <div class="data-event">
+      <span>Capacidad</span>
+      <p>${event.maximun_capacity}</p>
+    </div>
+    <div class="data-event">
+      <span>Hora</span>
+      <p>${event.hour}</p>
+    </div>
+    <div class="data-event">
+      <span>Fecha</span>
+      <p>${event.date}</p>
+    </div>
+    <div class="data-event">
+      <span>Tipo de evento</span>
+      <p>${event.event_type_name}</p>
+    </div>
+    <div class="data-event">
+      <span>Empresa organizadora</span>
+      <p>${event.company_name}</p>
+    </div>
+    <div class="data-event">
+      <span>Precio</span>
+      <p>${event.price}€</p>
+    </div>
+
+    <div class="side-btns">
+      <button type="button" data-side-action="edit" data-edit-id="${event.id}">Editar</button>
+      <button type="button" data-side-action="delete" data-delete-id="${event.id}">Eliminar</button>
+    </div>
+  `;
+}
+
+function renderEventsOnTable(tbody, arrEvents) {
+  if (!Array.isArray(arrEvents)) return;
+
+  tbody.innerHTML = "";
+
+  arrEvents.forEach((e) => {
+    const tr = document.createElement("tr");
+    tr.setAttribute("data-event-id-row", e.id);
+
+    const tdEventName = document.createElement("td");
+    tdEventName.textContent = e.name;
+
+    const tdCompanyName = document.createElement("td");
+    tdCompanyName.textContent = e.company_name;
+
+    const tdEventPlace = document.createElement("td");
+    tdEventPlace.textContent = e.place;
+
+    const tdDate = document.createElement("td");
+    tdDate.textContent = e.date;
+
+    const tdPrice = document.createElement("td");
+    tdPrice.textContent = e.price;
+
+    const tdTimeStamp = document.createElement("td");
+    tdTimeStamp.textContent = e.hour;
+
+    const tdEventType = document.createElement("td");
+    tdEventType.textContent = e.event_type_name;
+
+    tr.append(
+      tdEventName,
+      tdCompanyName,
+      tdEventPlace,
+      tdDate,
+      tdPrice,
+      tdTimeStamp,
+      tdEventType,
+    );
+    tbody.append(tr);
+  });
+}
+
+function fillCompaniesSelect(select, arrCompanies) {
+  if (!Array.isArray(arrCompanies)) return;
+
+  arrCompanies.forEach((c) => {
+    const option = document.createElement("option");
+    option.value = c.id;
+    option.textContent = c.name;
+    select.append(option);
+  });
+}
+
+function fillTypeEventSelect(select, arrEventTypes) {
+  if (!Array.isArray(arrEventTypes)) return;
+
+  arrEventTypes.forEach((c) => {
+    const option = document.createElement("option");
+    option.value = c.id;
+    option.textContent = c.nombre;
+    select.append(option);
+  });
+}
+
+function updateStats(
+  totalEventsStat,
+  mediumPrice,
+  totalCapacityEvents,
+  allEvents,
+) {
+  if (!Array.isArray(allEvents)) return;
+  let totalCapacity = 0;
+  let totalPrice = 0;
+  const eventsSize = allEvents.length;
+  totalEventsStat.textContent = eventsSize;
+
+  allEvents.forEach((e) => {
+    totalCapacity += e.maximun_capacity;
+    totalPrice += e.price;
+  });
+
+  totalCapacityEvents.textContent = totalCapacity;
+
+  mediumPrice.textContent = totalPrice / eventsSize + "€";
 }

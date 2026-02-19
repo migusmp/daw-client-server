@@ -11,9 +11,7 @@ import { appState } from "./state.js";
 
 const app = document.querySelector("#app");
 const headerNav = document.querySelector("#header-navegation");
-const ctx = { app, headerNav };
 
-/** 1) Un solo mapa: render + estilos */
 const PAGES = {
   "/": {
     render: renderHome,
@@ -80,7 +78,7 @@ function render() {
   const page = PAGES[path] ?? NOT_FOUND;
 
   setPageStyles(page.styles);
-  page.render(ctx);
+  page.render({ app, headerNav });
 }
 
 export function go(path) {

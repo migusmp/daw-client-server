@@ -8,6 +8,30 @@ const PROFILE_ICON = `
   </svg>
 `;
 
+export const fetchJson = async (route, params) => {
+  try {
+
+    const res = await fetch(route, params);
+
+    const payload = await res.json().catch(() => null);
+
+    if (!res.ok) {
+      console.error("HTTP error:", res.status, payload);
+      return null;
+    }
+
+    if (payload?.status !== "success") {
+      console.error("API error:", payload);
+      return null;
+    }
+
+    return payload?.data ?? null;
+  } catch (e) {
+    console.error("Network/JS error:", e);
+    return null;
+  }
+}
+
 const normalizePath = (value = "/") => {
   if (!value) return "/";
 
