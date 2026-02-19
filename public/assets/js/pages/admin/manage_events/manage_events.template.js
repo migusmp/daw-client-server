@@ -48,39 +48,34 @@ export function getManageEventsTemplate() {
           <div class="me-filters">
             <label class="me-field">
               <span>Buscar</span>
-              <input class="me-input" type="search" placeholder="Nombre, lugar o tipo" data-search-event/>
+              <input class="me-input" type="search" placeholder="Empresa, nombre, lugar, tipo de evento" data-search-event/>
             </label>
 
             <label class="me-field">
               <span>Empresa</span>
               <select class="me-select" data-company-select>
-                <option>Todas</option>
+                <option value="all">Todas</option>
               </select>
             </label>
 
             <label class="me-field">
               <span>Tipo de evento</span>
               <select class="me-select" data-event-type-select>
-                <option>Todos</option>
+                <option value="all">Todos</option>
               </select>
             </label>
 
             <label class="me-field">
-              <span>Fecha</span>
-              <input class="me-input" type="date" data-date-input/>
-            </label>
-
-            <label class="me-field">
-              <span>Estado</span>
+              <span>Estado (No implementado)</span>
               <select class="me-select" date-status-select>
-                <option>Todos</option>
+                <option value="all">Todos</option>
                 <option>Próximos</option>
                 <option>Finalizados</option>
               </select>
             </label>
 
             <label class="me-field">
-              <span>Precio</span>
+              <span>Precio máximo</span>
               <input class="me-input" type="number" min="0" step="0.01" placeholder="0.00" data-price-input/>
             </label>
           </div>

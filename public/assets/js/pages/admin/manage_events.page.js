@@ -1,6 +1,7 @@
 import { appState } from "../../state.js";
 import { fetchJson, redirectTo, renderHeaderLinks } from "../../utils.js";
 import { fetchEventTypes } from "./company/company.helpers.js";
+import { normalize } from "./manage_companies/manage_companies.filters.js";
 import { getManageEventsTemplate } from "./manage_events/manage_events.template.js";
 
 export async function renderManageEventsPage({ app, headerNav }) {
@@ -40,11 +41,10 @@ export async function renderManageEventsPage({ app, headerNav }) {
 
   const filters = {
     q: "",
-    companyId: "",
-    date: "",
-    status: "",
-    price: "",
-    event_type: "",
+    company: "all",
+    status: "all",
+    price: null,
+    event_type: "all",
   };
 
   const page = document.querySelector(".me-page");
@@ -62,10 +62,8 @@ export async function renderManageEventsPage({ app, headerNav }) {
   // SELECTORS DE 'SELECTS' E 'INPUTS' DE LA TABLA
   const searchInput = document.querySelector("[data-search-event]");
   const companiesSelect = document.querySelector("[data-company-select]");
-  const dateInput = document.querySelector("[data-date-input]");
-  const statusSelect = document.querySelector("[date-status-select]");
-  const priceInput = document.querySelector("[date-status-select]");
   const eventTypeSelect = document.querySelector("[data-event-type-select]");
+  const priceInput = document.querySelector("[data-price-input]");
 
   // Cargar información en el select de las empresas
   fillCompaniesSelect(companiesSelect, allCompanies);
@@ -85,10 +83,9 @@ export async function renderManageEventsPage({ app, headerNav }) {
 
   tbody?.addEventListener("click", (e) => {
     const eventRow = e.target.closest("[data-event-id-row]");
-    console.log(eventRow.textContent);
+    if (!eventRow) return;
     const id = Number(eventRow.getAttribute("data-event-id-row"));
     const event = allEvents.filter((e) => e.id === id);
-    console.log(event);
     // Pongo el [0] porque el filtrado me devuelve un array de una sola posición
     // y para acceder directamente al evento debo seleccionar esa posición
     renderSidePanel(sideEl, event[0]);
@@ -100,6 +97,36 @@ export async function renderManageEventsPage({ app, headerNav }) {
     renderSidePanel(sideEl, null);
   });
 
+  searchInput?.addEventListener("input", (e) => {
+    filters.q = e.target.value;
+    repaint();
+  });
+
+  companiesSelect?.addEventListener("change", (e) => {
+    filters.company = e.target.value;
+    repaint();
+  });
+
+  eventTypeSelect?.addEventListener("change", (e) => {
+    filters.event_type = Number(e.target.value);
+    console.log(filters.event_type);
+    repaint();
+  });
+
+  priceInput?.addEventListener("input", (e) => {
+    filters.price = e.target.value === "" ? null : Number(e.target.value);
+    repaint();
+  });
+
+  function repaint() {
+    const filterEvents = getFilteredEvents();
+    renderEventsOnTable(tbody, filterEvents);
+  }
+
+  function getFilteredEvents() {
+    return allEvents.filter((e) => eventMatchFilters(e, filters));
+  }
+
   clearFiltersBtn?.addEventListener("click", () => {
     filterFields.forEach((field) => {
       if (field.tagName === "SELECT") {
@@ -109,7 +136,43 @@ export async function renderManageEventsPage({ app, headerNav }) {
 
       field.value = "";
     });
+    filters.company = "all";
+    filters.event_type = "all";
+    filters.price = null;
+    filters.q = "";
+    filters.status = "all";
+
+    repaint();
   });
+}
+
+function eventMatchFilters(e, filters) {
+  if (!e) return;
+  if (!filters) return;
+
+  const query = normalize(filters.q);
+  // TODO
+  if (query) {
+    const heystack = normalize(
+      `${e.name} ${e.company_name} ${e.place} ${e.event_type_name}`,
+    );
+    if (!heystack.includes(query)) return false;
+  }
+
+  if (filters.company !== "all" && e.id_company !== Number(filters.company)) {
+    return false;
+  }
+
+  if (filters.price !== null) {
+    const eventPrice = Number(e.price);
+    if (eventPrice === null || eventPrice > filters.price) return false;
+  }
+
+  if (filters.event_type !== "all" && e.id_event_type !== filters.event_type) {
+    return false;
+  }
+
+  return true;
 }
 
 function renderSidePanel(sideEl, event) {
@@ -166,34 +229,75 @@ function renderSidePanel(sideEl, event) {
 }
 
 function renderEventsOnTable(tbody, arrEvents) {
-  if (!Array.isArray(arrEvents)) return;
+  if (!Array.isArray(arrEvents) || !tbody) return;
 
   tbody.innerHTML = "";
+  if (arrEvents.length === 0) {
+    const tr = document.createElement("tr");
+    const tdStatus = document.createElement("td");
+    tdStatus.className = "me-table__status";
+    tdStatus.colSpan = 7;
+    tdStatus.textContent = "No hay eventos para mostrar con estos filtros.";
+    tr.append(tdStatus);
+    tbody.append(tr);
+    return;
+  }
 
   arrEvents.forEach((e) => {
     const tr = document.createElement("tr");
+    tr.className = "me-row";
     tr.setAttribute("data-event-id-row", e.id);
 
     const tdEventName = document.createElement("td");
-    tdEventName.textContent = e.name;
+    const eventName = document.createElement("p");
+    eventName.className = "me-event-name";
+    eventName.textContent = e.name ?? "Sin nombre";
+
+    const eventMeta = document.createElement("span");
+    eventMeta.className = "me-event-meta";
+    eventMeta.textContent = `ID ${e.id}`;
+    tdEventName.append(eventName, eventMeta);
 
     const tdCompanyName = document.createElement("td");
-    tdCompanyName.textContent = e.company_name;
+    const companyPill = document.createElement("span");
+    companyPill.className = "me-company-pill";
+    companyPill.textContent = e.company_name ?? "Sin empresa";
+    tdCompanyName.append(companyPill);
 
     const tdEventPlace = document.createElement("td");
-    tdEventPlace.textContent = e.place;
+    tdEventPlace.className = "me-cell-place";
+    tdEventPlace.textContent = e.place ?? "Sin lugar";
 
     const tdDate = document.createElement("td");
-    tdDate.textContent = e.date;
+    const dateChip = document.createElement("span");
+    dateChip.className = "me-date-chip";
+    dateChip.textContent = e.date ?? "-";
+    tdDate.append(dateChip);
 
     const tdPrice = document.createElement("td");
-    tdPrice.textContent = e.price;
+    const rawPrice = e.price ?? "";
+    const priceWithCurrency =
+      rawPrice === "" || rawPrice === null
+        ? "-"
+        : typeof rawPrice === "string" && rawPrice.includes("€")
+          ? rawPrice
+          : `${rawPrice} €`;
+    const priceValue = document.createElement("span");
+    priceValue.className = "me-price-value";
+    priceValue.textContent = priceWithCurrency;
+    tdPrice.append(priceValue);
 
     const tdTimeStamp = document.createElement("td");
-    tdTimeStamp.textContent = e.hour;
+    const timeChip = document.createElement("span");
+    timeChip.className = "me-time-chip";
+    timeChip.textContent = e.hour ?? "-";
+    tdTimeStamp.append(timeChip);
 
     const tdEventType = document.createElement("td");
-    tdEventType.textContent = e.event_type_name;
+    const typePill = document.createElement("span");
+    typePill.className = "me-type-pill";
+    typePill.textContent = e.event_type_name ?? "Sin tipo";
+    tdEventType.append(typePill);
 
     tr.append(
       tdEventName,
@@ -225,7 +329,7 @@ function fillTypeEventSelect(select, arrEventTypes) {
   arrEventTypes.forEach((c) => {
     const option = document.createElement("option");
     option.value = c.id;
-    option.textContent = c.nombre;
+    option.textContent = c.nombre.charAt(0).toUpperCase() + c.nombre.slice(1);
     select.append(option);
   });
 }
