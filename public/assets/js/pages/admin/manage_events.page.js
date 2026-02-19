@@ -18,7 +18,7 @@ export async function renderManageEventsPage({ app, headerNav }) {
   ]);
 
   // Obtener todos los eventos
-  const allEvents = await fetchJson("/api/events", { method: "GET" });
+  let allEvents = await fetchJson("/api/events", { method: "GET" });
   if (!allEvents) {
     console.error("Error al requerir los eventos:", allEvents);
     return;
@@ -59,6 +59,7 @@ export async function renderManageEventsPage({ app, headerNav }) {
   // Actualizar las estadísticas globales de los eventos creados
   updateStats(totalEventsStat, mediumPrice, totalCapacityEvents, allEvents);
 
+  const reloadEventsBtn = document.querySelector("[data-reload-btn]");
   // SELECTORS DE 'SELECTS' E 'INPUTS' DE LA TABLA
   const searchInput = document.querySelector("[data-search-event]");
   const companiesSelect = document.querySelector("[data-company-select]");
@@ -96,6 +97,11 @@ export async function renderManageEventsPage({ app, headerNav }) {
     e.preventDefault();
     renderSidePanel(sideEl, null);
   });
+
+  reloadEventsBtn?.addEventListener("click", async () => {
+    allEvents = await fetchJson("/api/events", { method: "GET" });
+    repaint();
+  })
 
   searchInput?.addEventListener("input", (e) => {
     filters.q = e.target.value;

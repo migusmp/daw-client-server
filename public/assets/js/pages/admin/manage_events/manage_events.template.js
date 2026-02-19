@@ -37,10 +37,10 @@ export function getManageEventsTemplate() {
           <header class="me-card__head">
             <div>
               <h2 class="me-card__title">Agenda de eventos</h2>
-              <p class="me-card__subtitle">Estructura lista para que añadas la lógica de filtrado y acciones CRUD.</p>
+              <p class="me-card__subtitle">Busca, filtra, edita y elimina eventos.</p>
             </div>
             <div class="me-card__actions">
-              <button class="me-btn" type="button">Recargar</button>
+              <button class="me-btn" type="button" data-reload-btn>Recargar</button>
               <button class="me-btn" type="button" data-events-clear-filters>Limpiar filtros</button>
             </div>
           </header>
