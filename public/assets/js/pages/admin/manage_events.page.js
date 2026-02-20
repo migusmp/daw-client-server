@@ -2,6 +2,7 @@ import { appState } from "../../state.js";
 import { fetchJson, redirectTo, renderHeaderLinks } from "../../utils.js";
 import { fetchEventTypes } from "./company/company.helpers.js";
 import { eventMatchFilters } from "./manage_events/manage_events.filters.js";
+import { newEventModal } from "./manage_events/manage_events.modals.js";
 import { fillCompaniesSelect, fillTypeEventSelect } from "./manage_events/manage_events.select.js";
 import { renderSidePanel } from "./manage_events/manage_events.side_panel.js";
 import { updateStats } from "./manage_events/manage_events.stats.js";
@@ -63,6 +64,7 @@ export async function renderManageEventsPage({ app, headerNav }) {
   // Actualizar las estadísticas globales de los eventos creados
   updateStats(totalEventsStat, mediumPrice, totalCapacityEvents, allEvents);
 
+  const showCreateNewEventBtn = document.querySelector("[data-new-event-modal-btn]");
   const reloadEventsBtn = document.querySelector("[data-reload-btn]");
   // SELECTORS DE 'SELECTS' E 'INPUTS' DE LA TABLA
   const searchInput = document.querySelector("[data-search-event]");
@@ -85,6 +87,11 @@ export async function renderManageEventsPage({ app, headerNav }) {
   const filterFields = app.querySelectorAll(
     ".me-filters .me-input, .me-filters .me-select",
   );
+
+  showCreateNewEventBtn?.addEventListener("click", () => {
+    // TODO: make a full modal functionality
+    newEventModal(page, allEventTypes, allCompanies);
+  });
 
   tbody?.addEventListener("click", (e) => {
     const eventRow = e.target.closest("[data-event-id-row]");

@@ -8,7 +8,7 @@ export function getManageEventsTemplate() {
 
         <div class="me-hero-actions">
           <a class="me-btn" href="/admin" data-link>Volver al panel</a>
-          <button class="me-btn me-btn--primary" type="button">Nuevo evento</button>
+          <button class="me-btn me-btn--primary" type="button" data-new-event-modal-btn>Nuevo evento</button>
         </div>
       </article>
 

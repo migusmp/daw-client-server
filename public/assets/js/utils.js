@@ -290,3 +290,7 @@ export const userIsLogged = () => {
   const { user } = appState.getState();
   return user ? true : false;
 }
+
+export const isEmptyOrNull = (s) => {
+  return s === "" || s.length == 0 || s === null
+}

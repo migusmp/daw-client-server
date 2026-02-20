@@ -53,12 +53,6 @@ const NOT_FOUND = {
 
 const STYLE_ATTR = "data-spa-style";
 
-// Normalizar ruta
-function pathOf(urlPath = "/") {
-  const p = (urlPath || "/").split("?")[0].split("#")[0];
-  return p !== "/" ? p.replace(/\/+$/, "") : "/";
-}
-
 function setPageStyles(hrefs = []) {
   // elimina estilos SPA anteriores
   document.querySelectorAll(`link[${STYLE_ATTR}]`).forEach((l) => l.remove());
@@ -74,7 +68,7 @@ function setPageStyles(hrefs = []) {
 }
 
 function render() {
-  const path = pathOf(window.location.pathname);
+  const path = window.location.pathname;
   const page = PAGES[path] ?? NOT_FOUND;
 
   setPageStyles(page.styles);
