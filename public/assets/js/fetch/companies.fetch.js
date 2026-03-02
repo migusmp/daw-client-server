@@ -76,6 +76,12 @@ export async function fetchCompanyEvents(id) {
 }
 
 export async function createCompany(companyData) {
+  const eventTypeIds = Array.isArray(companyData.event_type_ids)
+    ? companyData.event_type_ids
+        .map((value) => Number(value))
+        .filter((value) => Number.isInteger(value) && value > 0)
+    : [];
+
   return requestCompanyApi("/api/companies", {
     method: "POST",
     headers: {
@@ -87,6 +93,7 @@ export async function createCompany(companyData) {
       creation_year: companyData.creation_year,
       contact_email: companyData.contact_email,
       contact_number: companyData.contact_number,
+      event_type_ids: Array.from(new Set(eventTypeIds)),
     }),
   });
 }

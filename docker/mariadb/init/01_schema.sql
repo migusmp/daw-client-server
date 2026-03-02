@@ -11,7 +11,7 @@ USE cityhalldb;
 -- =========================================================
 -- TABLA USERS
 -- Guarda usuarios registrados para iniciar sesión y comprar entradas.
--- Incluye roles (por ejemplo USER/ADMIN) y timestamps de auditoría.
+-- Incluye roles (USER/ADMIN) y timestamps de auditoría.
 -- =========================================================
 CREATE TABLE IF NOT EXISTS users (
   id INT UNSIGNED NOT NULL AUTO_INCREMENT,
@@ -164,8 +164,3 @@ CREATE TABLE IF NOT EXISTS entrada (
   KEY idx_entrada_ticket_evento (id_ticket, id_evento),
   UNIQUE KEY uq_entrada_qr (qr_token)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-
--- =========================================================
--- ÍNDICES
--- Se declaran dentro de cada CREATE TABLE para mantener idempotencia.
--- =========================================================

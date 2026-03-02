@@ -41,8 +41,12 @@ function removeExistingModal(app) {
   document.body.classList.remove("is-mc-modal-open");
 }
 
-function normalizeCompanyPayload(form, companyId = null) {
+function normalizeCompanyPayload(form, { companyId = null, isCreate = false } = {}) {
   const formData = new FormData(form);
+  const eventTypeIds = formData
+    .getAll("event_type_ids")
+    .map((value) => Number(value))
+    .filter((value) => Number.isInteger(value) && value > 0);
 
   const payload = {
     name: String(formData.get("name") ?? "").trim(),
@@ -56,10 +60,14 @@ function normalizeCompanyPayload(form, companyId = null) {
     payload.id = Number(companyId);
   }
 
+  if (isCreate) {
+    payload.event_type_ids = Array.from(new Set(eventTypeIds));
+  }
+
   return payload;
 }
 
-function validateCompanyPayload(payload) {
+function validateCompanyPayload(payload, { isCreate = false } = {}) {
   if (!payload.name) return "El nombre de la empresa es obligatorio.";
   if (!payload.city) return "La ciudad es obligatoria.";
   if (!Number.isInteger(payload.creation_year) || payload.creation_year < 1800 || payload.creation_year > 2100) {
@@ -70,6 +78,9 @@ function validateCompanyPayload(payload) {
   if (!emailOk) return "El correo de contacto no es válido.";
 
   if (!payload.contact_number) return "El teléfono de contacto es obligatorio.";
+  if (isCreate && (!Array.isArray(payload.event_type_ids) || payload.event_type_ids.length === 0)) {
+    return "Selecciona al menos un tipo de evento.";
+  }
 
   return "";
 }
@@ -103,13 +114,22 @@ function wireCloseHandlers({ modal, closeModal, focusEl = null }) {
   };
 }
 
-function createCompanyFormModal({ app, mode, company = null, onSuccess }) {
+function createCompanyFormModal({ app, mode, company = null, onSuccess, eventTypes = [] }) {
   const isCreate = mode === "create";
   const title = isCreate ? "Nueva empresa" : "Editar empresa";
   const subtitle = isCreate
     ? "Registra una nueva empresa en el sistema municipal."
     : `Actualiza los datos de ${company?.name ?? "la empresa seleccionada"}.`;
   const submitLabel = isCreate ? "Crear empresa" : "Guardar cambios";
+  const normalizedEventTypes = Array.isArray(eventTypes) ? eventTypes : [];
+  const eventTypeOptions = normalizedEventTypes
+    .map((eventType) => {
+      const id = Number(eventType?.id ?? 0);
+      const name = String(eventType?.nombre ?? "").trim();
+      if (!Number.isInteger(id) || id <= 0 || !name) return "";
+      return `<option value="${id}">${safeText(name)}</option>`;
+    })
+    .join("");
 
   const wrap = document.createElement("section");
   wrap.className = "mc-modal";
@@ -165,6 +185,20 @@ function createCompanyFormModal({ app, mode, company = null, onSuccess }) {
             <span>Teléfono de contacto</span>
             <input type="text" name="contact_number" value="${safeText(company?.number_person_in_charge ?? "")}" required />
           </label>
+
+          ${
+            isCreate
+              ? `
+              <label class="mc-modal__field mc-modal__field--full">
+                <span>Tipos de evento que gestiona</span>
+                <select name="event_type_ids" multiple size="6" required>
+                  ${eventTypeOptions}
+                </select>
+                <small>Mantén Ctrl/Cmd para seleccionar varios tipos.</small>
+              </label>
+            `
+              : ""
+          }
         </div>
 
         <p class="mc-modal__status" data-status aria-live="polite"></p>
@@ -200,8 +234,11 @@ function createCompanyFormModal({ app, mode, company = null, onSuccess }) {
     event.preventDefault();
     if (isSubmitting) return;
 
-    const payload = normalizeCompanyPayload(form, isCreate ? null : company?.id);
-    const validationError = validateCompanyPayload(payload);
+    const payload = normalizeCompanyPayload(form, {
+      companyId: isCreate ? null : company?.id,
+      isCreate,
+    });
+    const validationError = validateCompanyPayload(payload, { isCreate });
 
     if (validationError) {
       setStatus(statusEl, validationError, "error");
@@ -245,12 +282,13 @@ function createCompanyFormModal({ app, mode, company = null, onSuccess }) {
   mountModal(app, wrap);
 }
 
-export function openCreateCompanyModal({ app, onSuccess } = {}) {
+export function openCreateCompanyModal({ app, onSuccess, eventTypes = [] } = {}) {
   if (!app) return;
   createCompanyFormModal({
     app,
     mode: "create",
     onSuccess,
+    eventTypes,
   });
 }
 
@@ -363,5 +401,6 @@ export function renderCreateNewCompanyModal(app, options = {}) {
   openCreateCompanyModal({
     app,
     onSuccess: options?.onSuccess,
+    eventTypes: options?.eventTypes,
   });
 }

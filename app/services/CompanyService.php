@@ -42,10 +42,10 @@ class CompanyService
         }
     }
 
-    public function saveCompany(Company $company): bool
+    public function saveCompany(Company $company, array $eventTypeIds = []): bool
     {
         try {
-            return $this->companyRepository->save($company);
+            return $this->companyRepository->save($company, $eventTypeIds);
         } catch (PDOException $e) {
             error_log($e->getMessage());
             return false;

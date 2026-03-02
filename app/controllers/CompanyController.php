@@ -41,16 +41,27 @@ class CompanyController
 
     private function normalizeCompanyPayload(array $data): array
     {
+        $eventTypeIds = [];
+        if (isset($data["event_type_ids"]) && is_array($data["event_type_ids"])) {
+            foreach ($data["event_type_ids"] as $eventTypeId) {
+                $normalizedId = (int)$eventTypeId;
+                if ($normalizedId > 0) {
+                    $eventTypeIds[] = $normalizedId;
+                }
+            }
+        }
+
         return [
             "name" => trim((string)($data["name"] ?? "")),
             "city" => trim((string)($data["city"] ?? "")),
             "creation_year" => (int)($data["creation_year"] ?? 0),
             "contact_email" => trim((string)($data["contact_email"] ?? "")),
             "contact_number" => trim((string)($data["contact_number"] ?? "")),
+            "event_type_ids" => array_values(array_unique($eventTypeIds)),
         ];
     }
 
-    private function validateCompanyData(array $payload): void
+    private function validateCompanyData(array $payload, bool $requireEventTypes = false): void
     {
         if ($payload["name"] === "") {
             JsonResponse::error("Company name is required", JsonCode::BAD_REQUEST, HttpStatus::BAD_REQUEST);
@@ -70,6 +81,13 @@ class CompanyController
 
         if ($payload["contact_number"] === "") {
             JsonResponse::error("Contact phone is required", JsonCode::BAD_REQUEST, HttpStatus::BAD_REQUEST);
+        }
+
+        if ($requireEventTypes) {
+            $eventTypeIds = $payload["event_type_ids"] ?? [];
+            if (!is_array($eventTypeIds) || count($eventTypeIds) === 0) {
+                JsonResponse::error("At least one event type is required", JsonCode::BAD_REQUEST, HttpStatus::BAD_REQUEST);
+            }
         }
     }
 
@@ -213,10 +231,10 @@ class CompanyController
         }
 
         $payload = $this->normalizeCompanyPayload(Request::json());
-        $this->validateCompanyData($payload);
+        $this->validateCompanyData($payload, true);
 
         $company = $this->buildCompany($payload);
-        $ok = $this->companies()->saveCompany($company);
+        $ok = $this->companies()->saveCompany($company, $payload["event_type_ids"]);
 
         if (!$ok) {
             JsonResponse::error("Could not create company", JsonCode::INTERNAL_SERVER_ERROR, HttpStatus::INTERNAL_SERVER_ERROR);
@@ -243,7 +261,7 @@ class CompanyController
         }
 
         $payload = $this->normalizeCompanyPayload($data);
-        $this->validateCompanyData($payload);
+        $this->validateCompanyData($payload, false);
 
         $company = $this->buildCompany($payload, $id);
         $ok = $this->companies()->updateCompany($company);

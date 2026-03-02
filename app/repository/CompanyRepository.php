@@ -35,8 +35,8 @@ class CompanyRepository extends BaseRepository
         te.id_tipo AS tipo_id,
         te.nombre  AS tipo_nombre
       FROM empresa e
-      LEFT JOIN evento ev ON ev.id_empresa = e.id_empresa
-      LEFT JOIN tipo_evento te ON te.id_tipo = ev.id_tipo
+      LEFT JOIN empresas_evento ee ON ee.id_empresa = e.id_empresa
+      LEFT JOIN tipo_evento te ON te.id_tipo = ee.id_tipo
       ORDER BY e.id_empresa DESC, te.nombre ASC
     ";
 
@@ -178,8 +178,17 @@ class CompanyRepository extends BaseRepository
         return (int)($row["total"] ?? 0);
     }
 
-    public function save(Company $company): bool
+    public function save(Company $company, array $eventTypeIds = []): bool
     {
+        $normalizedEventTypeIds = array_values(array_unique(
+            array_filter(
+                array_map("intval", $eventTypeIds),
+                fn($id) => $id > 0
+            )
+        ));
+
+        $this->db->beginTransaction();
+
         $this->db->query("
             INSERT INTO {$this->table}
             (nombre, ciudad, anio_creacion, email_responsable, telefono_responsable)
@@ -193,8 +202,26 @@ class CompanyRepository extends BaseRepository
         $this->db->bind(":email_responsable", $company->getEmailPersonInCharge());
         $this->db->bind(":telefono_responsable", $company->getNumberPersonInCharge());
 
-        $this->db->execute();
-        return true;
+        try {
+            $this->db->execute();
+            $companyId = (int)$this->db->lastInsertId();
+
+            foreach ($normalizedEventTypeIds as $eventTypeId) {
+                $this->db->query("
+                    INSERT INTO empresas_evento (id_empresa, id_tipo)
+                    VALUES (:id_empresa, :id_tipo)
+                ");
+                $this->db->bind(":id_empresa", $companyId);
+                $this->db->bind(":id_tipo", $eventTypeId);
+                $this->db->execute();
+            }
+
+            $this->db->commit();
+            return true;
+        } catch (Throwable $e) {
+            $this->db->rollBack();
+            throw $e;
+        }
     }
 
     public function update(Company $company): bool

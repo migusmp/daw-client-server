@@ -119,6 +119,7 @@ export async function renderManageCompaniesPage({ app, headerNav }) {
     openCreateCompanyModal({
       app,
       onSuccess: refreshCompanies,
+      eventTypes: typeOfEvents,
     });
   }
 
@@ -170,6 +171,7 @@ export async function renderManageCompaniesPage({ app, headerNav }) {
     openCreateCompanyModal({
       app,
       onSuccess: refreshCompanies,
+      eventTypes: typeOfEvents,
     });
   });
 
