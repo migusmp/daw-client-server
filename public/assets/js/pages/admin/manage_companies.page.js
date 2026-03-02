@@ -36,6 +36,7 @@ export async function renderManageCompaniesPage({ app, headerNav }) {
 
   // Obtenemos el contenido html de la página mediante la función "getManageCompaniesTemplate()"
   app.innerHTML = getManageCompaniesTemplate();
+  const shouldOpenCreateModal = new URLSearchParams(window.location.search).get("open") === "create";
 
   // Inicializamos el estado de los filtros, cada vez que cambie un valor en los 'select' o en
   // el 'input' de búsqueda los valores que contiene 'filters' se irán actualizando.
@@ -108,6 +109,18 @@ export async function renderManageCompaniesPage({ app, headerNav }) {
   }
 
   syncCityFilterSelect();
+
+  if (shouldOpenCreateModal) {
+    const params = new URLSearchParams(window.location.search);
+    params.delete("open");
+    const query = params.toString();
+    window.history.replaceState({}, "", `${window.location.pathname}${query ? `?${query}` : ""}`);
+
+    openCreateCompanyModal({
+      app,
+      onSuccess: refreshCompanies,
+    });
+  }
 
   // Función que 'desmarca' la empresa seleccionada y actualiza el estilo y el
   // contenido del panel lateral

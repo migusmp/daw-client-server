@@ -5,6 +5,7 @@ require_once __DIR__ . "/../helpers/Request.php";
 require_once __DIR__ . "/../helpers/JsonResponse.php";
 require_once __DIR__ . "/../utils/JsonCode.php";
 require_once __DIR__ . "/../utils/HttpStatus.php";
+require_once __DIR__ . "/../exceptions/EmpresaSinRegistrarExcepcion.php";
 
 class EventController
 {
@@ -185,7 +186,19 @@ class EventController
         $this->validateEventData($payload);
 
         $event = $this->buildEvent($payload);
-        $ok = $this->events()->saveEvent($event);
+        try {
+            $ok = $this->events()->saveEvent($event);
+        } catch (EmpresaSinRegistrarExcepcion $e) {
+            JsonResponse::error(
+                $e->getMessage(),
+                JsonCode::NOT_FOUND,
+                HttpStatus::NOT_FOUND,
+                [
+                    "exception" => "EmpresaSinRegistrarExcepcion",
+                    "redirect_to" => "/admin/manage-companies?open=create",
+                ]
+            );
+        }
 
         if (!$ok) {
             JsonResponse::error("Could not create event", JsonCode::INTERNAL_SERVER_ERROR, HttpStatus::INTERNAL_SERVER_ERROR);

@@ -1,14 +1,18 @@
 <?php
 
 require_once __DIR__ . "/../repository/EventRepository.php";
+require_once __DIR__ . "/../repository/CompanyRepository.php";
+require_once __DIR__ . "/../exceptions/EmpresaSinRegistrarExcepcion.php";
 
 class EventService
 {
     private ?EventRepository $eventRepository = null;
+    private ?CompanyRepository $companyRepository = null;
 
     public function __construct()
     {
         $this->eventRepository = new EventRepository();
+        $this->companyRepository = new CompanyRepository();
     }
 
     public function getEventsByCompanyId(int $id): ?array
@@ -44,7 +48,14 @@ class EventService
     public function saveEvent(Event $event): bool
     {
         try {
+            $company = $this->companyRepository->findById($event->getIdCompany());
+            if ($company === null) {
+                throw new EmpresaSinRegistrarExcepcion();
+            }
+
             return $this->eventRepository->save($event);
+        } catch (EmpresaSinRegistrarExcepcion $e) {
+            throw $e;
         } catch (PDOException $e) {
             error_log($e->getMessage());
             return false;

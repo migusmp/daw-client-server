@@ -1,4 +1,4 @@
-import { fetchJson, isEmptyOrNull } from "../../../utils.js";
+import { isEmptyOrNull, redirectTo } from "../../../utils.js";
 import { normalize } from "../manage_companies/manage_companies.filters.js";
 import { fillEventTypesSelect } from "../manage_companies/manage_companies.selects.js";
 import { fillCompaniesSelect } from "./manage_events.select.js";
@@ -118,15 +118,47 @@ export function newEventModal(
       return;
     }
 
-    const responseData = await fetchJson("/api/events", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({}),
-    });
+    const payload = {
+      name: eventName,
+      id_event_type: Number(eventType),
+      id_company: Number(company),
+      place,
+      date,
+      hour,
+      price: Number(price),
+      maximun_capacity: Number(capacity),
+      poster_image: "",
+    };
 
-    console.log(eventName);
+    try {
+      const res = await fetch("/api/events", {
+        method: "POST",
+        headers: {
+          Accept: "application/json",
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(payload),
+      });
+
+      const response = await res.json().catch(() => null);
+      if (!res.ok || response?.status !== "success") {
+        const isEmpresaSinRegistrar =
+          response?.data?.exception === "EmpresaSinRegistrarExcepcion";
+        if (isEmpresaSinRegistrar) {
+          destroyModal(pageToAppendModal);
+          redirectTo(response?.data?.redirect_to || "/admin/manage-companies?open=create");
+          return;
+        }
+
+        console.error(response?.message || "No se pudo crear el evento.");
+        return;
+      }
+
+      destroyModal(pageToAppendModal);
+      window.location.reload();
+    } catch (error) {
+      console.error("No se pudo crear el evento.", error);
+    }
   });
 
   form
