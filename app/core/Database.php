@@ -17,10 +17,8 @@ class Database {
         
         // Options for the PDO connection
         $options = [
-            // Use persistent connection 
-            // (i.e., This prevents establishing a new connection each time when an instance of Database (object) is created.
             PDO::ATTR_PERSISTENT => true,
-            PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION // Throw exceptions on errors
+            PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION
         ];
 
         // Try to connect to the database by creating a new PDO instance
@@ -52,13 +50,11 @@ class Database {
 
     // Method to fetch all results as an associative array
     public function results() {
-        // Fetch all results to an associative array and return them
         return $this->stmt->fetchAll(PDO::FETCH_ASSOC);
     }
 
     // Method to fetch a single result to an associative array
     public function result() {
-        // Execute the statement
         $this->execute();
         // Fetch and return a single result
         return $this->stmt->fetch(PDO::FETCH_ASSOC);

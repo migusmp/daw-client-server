@@ -54,10 +54,10 @@ const NOT_FOUND = {
 const STYLE_ATTR = "data-spa-style";
 
 function setPageStyles(hrefs = []) {
-  // elimina estilos SPA anteriores
+  // eliminar estilos SPA anteriores
   document.querySelectorAll(`link[${STYLE_ATTR}]`).forEach((l) => l.remove());
 
-  // añade estilos de la página
+  // añadir estilos de la página seleccionada
   hrefs.forEach((href) => {
     const link = document.createElement("link");
     link.rel = "stylesheet";

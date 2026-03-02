@@ -5,6 +5,8 @@ require_once __DIR__ . "/controllers/AuthController.php";
 require_once __DIR__ . "/controllers/AdminController.php";
 require_once __DIR__ . "/controllers/CompanyController.php";
 require_once __DIR__ . "/controllers/EventController.php";
+require_once __DIR__ . "/controllers/TicketController.php";
+require_once __DIR__ . "/controllers/EntradaController.php";
 
 $router = new Router();
 
@@ -42,5 +44,19 @@ $router->post("/api/events", [EventController::class, 'create']);
 $router->put("/api/events", [EventController::class, 'update']);
 $router->delete("/api/events", [EventController::class, 'delete']);
 $router->get("/api/event-types", [EventController::class, 'getEventTypes']);
+
+// TICKETS API
+$router->get("/api/tickets", [TicketController::class, 'getAll']);
+$router->get("/api/tickets/show", [TicketController::class, 'getOne']);
+$router->post("/api/tickets", [TicketController::class, 'create']);
+$router->put("/api/tickets/pay", [TicketController::class, 'pay']);
+$router->put("/api/tickets/cancel", [TicketController::class, 'cancel']);
+
+// ENTRADAS API
+$router->get("/api/entradas", [EntradaController::class, 'getAll']);
+$router->get("/api/entradas/show", [EntradaController::class, 'getOne']);
+$router->post("/api/entradas", [EntradaController::class, 'create']);
+$router->put("/api/entradas/use", [EntradaController::class, 'use']);
+$router->put("/api/entradas/cancel", [EntradaController::class, 'cancel']);
 
 $router->resolve();

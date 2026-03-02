@@ -51,10 +51,31 @@ CREATE TABLE IF NOT EXISTS tipo_evento (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- =========================================================
+-- TABLA EMPRESAS_EVENTO
+-- Relación entre empresa y tipo de evento permitido.
+-- Define qué tipos puede gestionar cada empresa.
+-- =========================================================
+CREATE TABLE IF NOT EXISTS empresas_evento (
+  id_empresa INT UNSIGNED NOT NULL,
+  id_tipo INT UNSIGNED NOT NULL,
+
+  PRIMARY KEY (id_empresa, id_tipo),
+  KEY idx_empresas_evento_tipo_empresa (id_tipo, id_empresa),
+
+  CONSTRAINT fk_empresas_evento_empresa
+    FOREIGN KEY (id_empresa) REFERENCES empresa(id_empresa)
+    ON UPDATE CASCADE ON DELETE CASCADE,
+
+  CONSTRAINT fk_empresas_evento_tipo
+    FOREIGN KEY (id_tipo) REFERENCES tipo_evento(id_tipo)
+    ON UPDATE CASCADE ON DELETE RESTRICT
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- =========================================================
 -- TABLA EVENTO
 -- Eventos del ayuntamiento: nombre, tipo, empresa organizadora, lugar, fecha/hora,
 -- precio, aforo máximo y cartel (ruta o URL).
--- Incluye claves foráneas y una unicidad para evitar duplicados "idénticos".
+-- La combinación empresa+tipo se valida contra empresas_evento.
 -- =========================================================
 CREATE TABLE IF NOT EXISTS evento (
   id_evento INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
@@ -66,23 +87,59 @@ CREATE TABLE IF NOT EXISTS evento (
   hora TIME NOT NULL,
   precio DECIMAL(10,2) NOT NULL DEFAULT 0.00,
   aforo_maximo INT UNSIGNED NOT NULL,
+  aforo_actual INT UNSIGNED NOT NULL DEFAULT 0,
   imagen_cartel VARCHAR(255) NULL,
 
-  CONSTRAINT fk_evento_tipo
-    FOREIGN KEY (id_tipo) REFERENCES tipo_evento(id_tipo)
-    ON UPDATE CASCADE ON DELETE RESTRICT,
+  KEY idx_evento_tipo (id_tipo),
+  KEY idx_evento_empresa (id_empresa),
+  KEY idx_evento_fecha (fecha),
+  KEY idx_evento_filtros (id_tipo, fecha, id_empresa),
 
-  CONSTRAINT fk_evento_empresa
-    FOREIGN KEY (id_empresa) REFERENCES empresa(id_empresa)
+  CONSTRAINT fk_evento_empresa_tipo
+    FOREIGN KEY (id_empresa, id_tipo) REFERENCES empresas_evento(id_empresa, id_tipo)
     ON UPDATE CASCADE ON DELETE RESTRICT,
 
   UNIQUE KEY uq_evento (id_empresa, nombre, fecha, hora, lugar)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE utf8mb4_unicode_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
+-- =========================================================
+-- TABLA TICKETS
+-- Un ticket agrupa la compra de una o varias entradas para un mismo evento y usuario.
+-- Permite controlar estado de pago y total de la operación.
+-- =========================================================
+CREATE TABLE IF NOT EXISTS tickets (
+  id_ticket BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+  id_evento INT UNSIGNED NOT NULL,
+  id_user INT UNSIGNED NOT NULL,
+  total_pagado DECIMAL(10,2) NOT NULL DEFAULT 0.00,
+  estado ENUM('PENDIENTE','PAGADO','CANCELADO') NOT NULL DEFAULT 'PENDIENTE',
+  creado_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  pagado_at TIMESTAMP NULL,
+
+  CONSTRAINT fk_tickets_evento
+    FOREIGN KEY (id_evento) REFERENCES evento(id_evento)
+    ON UPDATE CASCADE ON DELETE RESTRICT,
+
+  CONSTRAINT fk_tickets_user
+    FOREIGN KEY (id_user) REFERENCES users(id)
+    ON UPDATE CASCADE ON DELETE RESTRICT,
+
+  KEY idx_tickets_consistencia (id_ticket, id_evento, id_user),
+  KEY idx_tickets_evento_estado (id_evento, estado),
+  KEY idx_tickets_user_estado (id_user, estado)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- =========================================================
+-- TABLA ENTRADA
+-- Entradas individuales emitidas para un evento y usuario.
+-- Pueden agruparse opcionalmente bajo un ticket de compra.
+-- Se usa ON DELETE RESTRICT para preservar coherencia e histórico de compra.
+-- =========================================================
 CREATE TABLE IF NOT EXISTS entrada (
   id_entrada BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
   id_evento INT UNSIGNED NOT NULL,
   id_user INT UNSIGNED NOT NULL,
+  id_ticket BIGINT UNSIGNED NULL,
   qr_token CHAR(36) NOT NULL,
   precio_pagado DECIMAL(10,2) NOT NULL,
   estado ENUM('VALIDA','CANCELADA','USADA') NOT NULL DEFAULT 'VALIDA',
@@ -96,16 +153,19 @@ CREATE TABLE IF NOT EXISTS entrada (
     FOREIGN KEY (id_user) REFERENCES users(id)
     ON UPDATE CASCADE ON DELETE RESTRICT,
 
-  UNIQUE KEY uq_entrada_qr (qr_token),
-  INDEX idx_entrada_evento (id_evento),
-  INDEX idx_entrada_user (id_user)
+  CONSTRAINT fk_entrada_ticket
+    FOREIGN KEY (id_ticket) REFERENCES tickets(id_ticket)
+    ON UPDATE CASCADE ON DELETE RESTRICT,
+
+  CONSTRAINT fk_entrada_ticket_consistencia
+    FOREIGN KEY (id_ticket, id_evento, id_user) REFERENCES tickets(id_ticket, id_evento, id_user)
+    ON UPDATE CASCADE ON DELETE RESTRICT,
+
+  KEY idx_entrada_ticket_evento (id_ticket, id_evento),
+  UNIQUE KEY uq_entrada_qr (qr_token)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- =========================================================
 -- ÍNDICES
--- Optimizan filtros típicos en listados (por tipo, empresa, fecha y combinados).
+-- Se declaran dentro de cada CREATE TABLE para mantener idempotencia.
 -- =========================================================
-CREATE INDEX idx_evento_tipo ON evento(id_tipo);
-CREATE INDEX idx_evento_empresa ON evento(id_empresa);
-CREATE INDEX idx_evento_fecha ON evento(fecha);
-CREATE INDEX idx_evento_filtros ON evento(id_tipo, fecha, id_empresa);
