@@ -1,0 +1,25 @@
+export function getHomeElements(app) {
+  return {
+    filtersForm: app.querySelector("[data-home-filters]"),
+    qInput: app.querySelector("[data-filter-q]"),
+    typeSelect: app.querySelector("[data-filter-type]"),
+    companySelect: app.querySelector("[data-filter-company]"),
+    dateFromInput: app.querySelector("[data-filter-date-from]"),
+    dateToInput: app.querySelector("[data-filter-date-to]"),
+    resetFiltersButton: app.querySelector("[data-filter-reset]"),
+    companyTypeSelect: app.querySelector("[data-company-type]"),
+    companyQueryInput: app.querySelector("[data-company-query]"),
+    companyResults: app.querySelector("[data-company-results]"),
+    eventsSummary: app.querySelector("[data-events-summary]"),
+    eventsGrid: app.querySelector("[data-events-grid]"),
+    purchaseModal: app.querySelector("[data-purchase-modal]"),
+    purchaseForm: app.querySelector("[data-purchase-form]"),
+    purchaseEventLabel: app.querySelector("[data-purchase-event]"),
+    purchaseQuantityInput: app.querySelector("[data-purchase-quantity]"),
+    purchaseUnitLabel: app.querySelector("[data-purchase-unit]"),
+    purchaseTotalLabel: app.querySelector("[data-purchase-total]"),
+    purchaseCapacityHint: app.querySelector("[data-purchase-capacity]"),
+    purchaseMessage: app.querySelector("[data-purchase-message]"),
+    purchaseSubmitButton: app.querySelector("[data-purchase-submit]"),
+  };
+}
