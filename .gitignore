@@ -39,4 +39,4 @@ coverage/
 # ===== IDE =====
 .vscode/
 .idea/
-*.iml
+*.iml/vendor/
