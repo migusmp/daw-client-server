@@ -104,7 +104,13 @@ class TicketController
             $this->respondTicketServiceError("Could not mark ticket as paid");
         }
 
-        JsonResponse::success("Ticket paid", JsonCode::SUCCESSFULL, HttpStatus::OK, $updated->toArray());
+        $data = $updated->toArray();
+        $warning = $this->tickets()->getLastWarning();
+        if ($warning !== null) {
+            $data["delivery_warning"] = $warning;
+        }
+
+        JsonResponse::success("Ticket paid", JsonCode::SUCCESSFULL, HttpStatus::OK, $data);
     }
 
     public function cancel(): void

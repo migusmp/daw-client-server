@@ -505,10 +505,18 @@ export function renderHome({ app, headerNav }) {
       return;
     }
 
-    setPurchaseMessage(
-      `Compra completada: ${createdCount} entrada(s) en ticket #${ticketId}.`,
-      "success",
-    );
+    const deliveryWarning = payResult.data?.delivery_warning;
+    if (deliveryWarning) {
+      setPurchaseMessage(
+        `Compra completada: ${createdCount} entrada(s) en ticket #${ticketId}. No se pudo enviar el email (${deliveryWarning}).`,
+        "error",
+      );
+    } else {
+      setPurchaseMessage(
+        `Compra completada: ${createdCount} entrada(s) en ticket #${ticketId}. PDF enviado por email.`,
+        "success",
+      );
+    }
 
     await loadEvents();
     purchaseSubmitButton.disabled = false;

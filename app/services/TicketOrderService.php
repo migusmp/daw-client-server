@@ -4,6 +4,7 @@ require_once __DIR__ . "/../models/TicketOrder.php";
 require_once __DIR__ . "/../repository/TicketOrderRepository.php";
 require_once __DIR__ . "/../repository/EventRepository.php";
 require_once __DIR__ . "/../repository/UserRepository.php";
+require_once __DIR__ . "/TicketDeliveryService.php";
 require_once __DIR__ . "/../utils/TicketOrderState.php";
 
 class TicketOrderService
@@ -11,13 +12,16 @@ class TicketOrderService
     private TicketOrderRepository $ticketRepository;
     private EventRepository $eventRepository;
     private UserRepository $userRepository;
+    private TicketDeliveryService $ticketDeliveryService;
     private ?string $lastError = null;
+    private ?string $lastWarning = null;
 
     public function __construct()
     {
         $this->ticketRepository = new TicketOrderRepository();
         $this->eventRepository = new EventRepository();
         $this->userRepository = new UserRepository();
+        $this->ticketDeliveryService = new TicketDeliveryService();
     }
 
     public function getLastError(): ?string
@@ -25,9 +29,15 @@ class TicketOrderService
         return $this->lastError;
     }
 
+    public function getLastWarning(): ?string
+    {
+        return $this->lastWarning;
+    }
+
     private function clearError(): void
     {
         $this->lastError = null;
+        $this->lastWarning = null;
     }
 
     private function setError(string $error): void
@@ -93,7 +103,19 @@ class TicketOrderService
             }
 
             $this->ticketRepository->markAsPaid($ticketId, $totalPagado);
-            return $this->ticketRepository->findById($ticketId);
+            $updated = $this->ticketRepository->findById($ticketId);
+            if (!$updated) {
+                $this->setError("TICKET_NOT_FOUND");
+                return null;
+            }
+
+            $deliveryOk = $this->ticketDeliveryService->deliverTicket($ticketId);
+            if (!$deliveryOk) {
+                $this->lastWarning = $this->ticketDeliveryService->getLastError() ?? "TICKET_EMAIL_NOT_SENT";
+                error_log("[TicketDelivery] " . $this->lastWarning);
+            }
+
+            return $updated;
         } catch (PDOException $e) {
             error_log($e->getMessage());
             $this->setError("INTERNAL_ERROR");

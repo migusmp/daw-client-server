@@ -37,5 +37,12 @@ define('DB_NAME', env('DB_NAME', 'cityhalldb'));
 define('DB_USER', env('DB_USER', ''));
 define('DB_PASS', env('DB_PASS', ''));
 define('BASE_URL', env('BASE_URL', 'http://localhost/city_hall/public/'));
+define('SMTP_HOST', env('SMTP_HOST', ''));
+define('SMTP_PORT', env('SMTP_PORT', '587'));
+define('SMTP_USER', env('SMTP_USER', ''));
+define('SMTP_PASS', env('SMTP_PASS', ''));
+define('SMTP_SECURE', env('SMTP_SECURE', 'tls'));
+define('SMTP_FROM_EMAIL', env('SMTP_FROM_EMAIL', ''));
+define('SMTP_FROM_NAME', env('SMTP_FROM_NAME', APP_NAME));
 
 ?>

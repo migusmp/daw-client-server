@@ -1,0 +1,10 @@
+{
+  "name": "cityhall/daw-client-server",
+  "description": "City Hall events app",
+  "type": "project",
+  "require": {
+    "php": "^8.1",
+    "phpmailer/phpmailer": "^6.9",
+    "tecnickcom/tcpdf": "^6.7"
+  }
+}
