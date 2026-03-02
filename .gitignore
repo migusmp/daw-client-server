@@ -40,3 +40,4 @@ coverage/
 .vscode/
 .idea/
 *.iml/vendor/
+/vendor/
