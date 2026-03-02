@@ -76,6 +76,104 @@ class EventRepository extends BaseRepository
         return $this->db->results();
     }
 
+    public function getPublicCatalog(
+        ?int $idTipo = null,
+        ?int $idEmpresa = null,
+        ?string $fechaDesde = null,
+        ?string $fechaHasta = null,
+        ?string $q = null
+    ): array {
+        $sql = "
+            SELECT
+                e.id_evento AS id,
+                e.nombre AS name,
+                e.id_tipo AS id_event_type,
+                te.nombre AS event_type_name,
+                e.id_empresa AS id_company,
+                em.nombre AS company_name,
+                em.ciudad AS company_city,
+                e.lugar AS place,
+                e.fecha AS date,
+                e.hora AS hour,
+                e.precio AS price,
+                e.aforo_maximo AS maximun_capacity,
+                e.aforo_actual AS current_capacity,
+                (e.aforo_maximo - e.aforo_actual) AS remaining_capacity,
+                e.imagen_cartel AS poster_image
+            FROM {$this->table} e
+            INNER JOIN empresa em ON em.id_empresa = e.id_empresa
+            INNER JOIN tipo_evento te ON te.id_tipo = e.id_tipo
+            WHERE 1=1
+        ";
+
+        if ($idTipo !== null) {
+            $sql .= " AND e.id_tipo = :id_tipo";
+        }
+
+        if ($idEmpresa !== null) {
+            $sql .= " AND e.id_empresa = :id_empresa";
+        }
+
+        if ($fechaDesde !== null && trim($fechaDesde) !== "") {
+            $sql .= " AND e.fecha >= :fecha_desde";
+        }
+
+        if ($fechaHasta !== null && trim($fechaHasta) !== "") {
+            $sql .= " AND e.fecha <= :fecha_hasta";
+        }
+
+        if ($q !== null && trim($q) !== "") {
+            $sql .= " AND (e.nombre LIKE :q OR em.nombre LIKE :q)";
+        }
+
+        $sql .= " ORDER BY e.fecha ASC, e.hora ASC, e.id_evento ASC";
+
+        $this->db->query($sql);
+
+        if ($idTipo !== null) {
+            $this->db->bind(":id_tipo", $idTipo);
+        }
+
+        if ($idEmpresa !== null) {
+            $this->db->bind(":id_empresa", $idEmpresa);
+        }
+
+        if ($fechaDesde !== null && trim($fechaDesde) !== "") {
+            $this->db->bind(":fecha_desde", $fechaDesde);
+        }
+
+        if ($fechaHasta !== null && trim($fechaHasta) !== "") {
+            $this->db->bind(":fecha_hasta", $fechaHasta);
+        }
+
+        if ($q !== null && trim($q) !== "") {
+            $this->db->bind(":q", "%" . trim($q) . "%");
+        }
+
+        $this->db->execute();
+        $rows = $this->db->results();
+
+        return array_map(function ($row) {
+            return [
+                "id" => (int)$row["id"],
+                "name" => (string)$row["name"],
+                "id_event_type" => (int)$row["id_event_type"],
+                "event_type_name" => (string)$row["event_type_name"],
+                "id_company" => (int)$row["id_company"],
+                "company_name" => (string)$row["company_name"],
+                "company_city" => (string)$row["company_city"],
+                "place" => (string)$row["place"],
+                "date" => (string)$row["date"],
+                "hour" => (string)$row["hour"],
+                "price" => (float)$row["price"],
+                "maximun_capacity" => (int)$row["maximun_capacity"],
+                "current_capacity" => (int)$row["current_capacity"],
+                "remaining_capacity" => (int)$row["remaining_capacity"],
+                "poster_image" => (string)$row["poster_image"],
+            ];
+        }, $rows);
+    }
+
     public function findById(int $id): ?Event
     {
         $this->db->query("

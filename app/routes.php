@@ -29,6 +29,7 @@ $router->get("/admin/manage-companies", [CompanyController::class, 'index']);
 
 // COMPANIES API
 $router->get("/api/companies", [CompanyController::class, 'getAll']);
+$router->get("/api/public/companies", [CompanyController::class, 'getPublicCompanies']);
 $router->post("/api/companies", [CompanyController::class, 'create']);
 $router->put("/api/companies", [CompanyController::class, 'update']);
 $router->delete("/api/companies", [CompanyController::class, 'delete']);
@@ -40,10 +41,12 @@ $router->get("/admin/manage-events", [HomeController::class, 'index']);
 
 // EVENTS API
 $router->get("/api/events", [EventController::class, 'getAll']);
+$router->get("/api/public/events", [EventController::class, 'getPublicCatalog']);
 $router->post("/api/events", [EventController::class, 'create']);
 $router->put("/api/events", [EventController::class, 'update']);
 $router->delete("/api/events", [EventController::class, 'delete']);
 $router->get("/api/event-types", [EventController::class, 'getEventTypes']);
+$router->get("/api/public/event-types", [EventController::class, 'getPublicEventTypes']);
 
 // TICKETS API
 $router->get("/api/tickets", [TicketController::class, 'getAll']);

@@ -141,6 +141,40 @@ class EventController
         JsonResponse::success("Event types", JsonCode::SUCCESSFULL, HttpStatus::OK, $eventTypes);
     }
 
+    public function getPublicEventTypes()
+    {
+        $eventTypes = $this->events()->getEventTypes();
+        if ($eventTypes === null) {
+            JsonResponse::error("Could not load event types", JsonCode::INTERNAL_SERVER_ERROR, HttpStatus::INTERNAL_SERVER_ERROR);
+        }
+
+        JsonResponse::success("Event types", JsonCode::SUCCESSFULL, HttpStatus::OK, $eventTypes);
+    }
+
+    public function getPublicCatalog()
+    {
+        $idTipo = isset($_GET["id_tipo"]) ? (int)$_GET["id_tipo"] : null;
+        $idEmpresa = isset($_GET["id_empresa"]) ? (int)$_GET["id_empresa"] : null;
+        $fechaDesde = isset($_GET["fecha_desde"]) ? trim((string)$_GET["fecha_desde"]) : null;
+        $fechaHasta = isset($_GET["fecha_hasta"]) ? trim((string)$_GET["fecha_hasta"]) : null;
+        $q = isset($_GET["q"]) ? trim((string)$_GET["q"]) : null;
+
+        if ($idTipo !== null && $idTipo <= 0) {
+            JsonResponse::error("Invalid id_tipo", JsonCode::BAD_REQUEST, HttpStatus::BAD_REQUEST);
+        }
+
+        if ($idEmpresa !== null && $idEmpresa <= 0) {
+            JsonResponse::error("Invalid id_empresa", JsonCode::BAD_REQUEST, HttpStatus::BAD_REQUEST);
+        }
+
+        $events = $this->events()->getPublicCatalog($idTipo, $idEmpresa, $fechaDesde, $fechaHasta, $q);
+        if ($events === null) {
+            JsonResponse::error("Could not load events", JsonCode::INTERNAL_SERVER_ERROR, HttpStatus::INTERNAL_SERVER_ERROR);
+        }
+
+        JsonResponse::success("Events", JsonCode::SUCCESSFULL, HttpStatus::OK, $events);
+    }
+
     public function create()
     {
         if (!$this->checkIfIsAdmin()) {

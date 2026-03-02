@@ -71,4 +71,14 @@ class CompanyService
             return false;
         }
     }
+
+    public function getPublicCompanies(?int $idTipo = null, ?string $q = null): ?array
+    {
+        try {
+            return $this->companyRepository->getPublicWithFilters($idTipo, $q);
+        } catch (PDOException $e) {
+            error_log($e->getMessage());
+            return null;
+        }
+    }
 }

@@ -184,6 +184,28 @@ class CompanyController
         JsonResponse::success("Registered companies:", JsonCode::SUCCESSFULL, HttpStatus::OK, $c);
     }
 
+    public function getPublicCompanies()
+    {
+        $idTipo = isset($_GET["id_tipo"]) ? (int)$_GET["id_tipo"] : null;
+        $q = isset($_GET["q"]) ? trim((string)$_GET["q"]) : null;
+
+        if ($idTipo !== null && $idTipo <= 0) {
+            JsonResponse::error("Invalid id_tipo", JsonCode::BAD_REQUEST, HttpStatus::BAD_REQUEST);
+        }
+
+        $companies = $this->companies()->getPublicCompanies($idTipo, $q);
+        if ($companies === null) {
+            JsonResponse::error(
+                "Error obtaining companies",
+                JsonCode::INTERNAL_SERVER_ERROR,
+                HttpStatus::INTERNAL_SERVER_ERROR
+            );
+        }
+
+        $payload = array_map(fn($company) => $company->toArray(), $companies);
+        JsonResponse::success("Companies", JsonCode::SUCCESSFULL, HttpStatus::OK, $payload);
+    }
+
     public function create()
     {
         if (!$this->checkIfIsAdmin()) {

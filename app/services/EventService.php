@@ -80,4 +80,19 @@ class EventService
             return null;
         }
     }
+
+    public function getPublicCatalog(
+        ?int $idTipo = null,
+        ?int $idEmpresa = null,
+        ?string $fechaDesde = null,
+        ?string $fechaHasta = null,
+        ?string $q = null
+    ): ?array {
+        try {
+            return $this->eventRepository->getPublicCatalog($idTipo, $idEmpresa, $fechaDesde, $fechaHasta, $q);
+        } catch (PDOException $e) {
+            error_log($e->getMessage());
+            return null;
+        }
+    }
 }

@@ -62,6 +62,56 @@ class CompanyRepository extends BaseRepository
         return array_values($byId);
     }
 
+    public function getPublicWithFilters(?int $idTipo = null, ?string $q = null): array
+    {
+        $sql = "
+      SELECT
+        e.id_empresa, e.nombre, e.ciudad, e.anio_creacion, e.email_responsable, e.telefono_responsable,
+        te.id_tipo AS tipo_id,
+        te.nombre  AS tipo_nombre
+      FROM empresa e
+      INNER JOIN empresas_evento ee ON ee.id_empresa = e.id_empresa
+      INNER JOIN tipo_evento te ON te.id_tipo = ee.id_tipo
+      WHERE 1=1
+    ";
+
+        if ($idTipo !== null) {
+            $sql .= " AND te.id_tipo = :id_tipo";
+        }
+
+        if ($q !== null && trim($q) !== "") {
+            $sql .= " AND e.nombre LIKE :q";
+        }
+
+        $sql .= " ORDER BY e.nombre ASC, te.nombre ASC";
+
+        $this->db->query($sql);
+
+        if ($idTipo !== null) {
+            $this->db->bind(":id_tipo", $idTipo);
+        }
+
+        if ($q !== null && trim($q) !== "") {
+            $this->db->bind(":q", "%" . trim($q) . "%");
+        }
+
+        $this->db->execute();
+        $rows = $this->db->results();
+
+        $byId = [];
+        foreach ($rows as $row) {
+            $id = (int)$row["id_empresa"];
+
+            if (!isset($byId[$id])) {
+                $byId[$id] = $this->fromRow($row);
+            }
+
+            $byId[$id]->addEventType((int)$row["tipo_id"], (string)$row["tipo_nombre"]);
+        }
+
+        return array_values($byId);
+    }
+
     public function findById(int $id): ?Company
     {
         $this->db->query("
