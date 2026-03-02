@@ -19,7 +19,7 @@ Full client-server web application built with vanilla PHP and JavaScript, focusi
    - `DB_HOST=127.0.0.1`
    - `DB_PORT=3306`
 3. Run PHP built-in server:
-   - `php -S localhost:8000 -t public public/index.php`
+   - `php -S localhost:8000 -t public`
 
 ## Scripts
 
