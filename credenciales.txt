@@ -1,0 +1,7 @@
+USUARIO ADMINISTRADOR:
+email: admin@example.com
+password: 1234
+
+USUARIO CLIENTE:
+email: cliente@example.com
+password: 1234
